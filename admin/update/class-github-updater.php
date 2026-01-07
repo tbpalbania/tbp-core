@@ -33,6 +33,18 @@ class TBP_GitHub_Updater {
 
         // Enable auto-updates support
         add_filter('plugin_auto_update_setting_html', [$this, 'auto_update_setting_html'], 10, 3);
+
+        // Show update notice in plugin row
+        add_action('in_plugin_update_message-' . $this->plugin_file, [$this, 'plugin_update_message'], 10, 2);
+    }
+
+    /**
+     * Show additional update message
+     */
+    public function plugin_update_message($plugin_data, $response) {
+        if (!empty($response->upgrade_notice)) {
+            printf('<br /><strong>%s</strong>', esc_html($response->upgrade_notice));
+        }
     }
 
     /**
@@ -154,7 +166,8 @@ class TBP_GitHub_Updater {
         $remote_version = ltrim($release['tag_name'], 'v');
 
         if (version_compare($remote_version, $current_version, '>')) {
-            $transient->response[$this->plugin_file] = (object) [
+            $update_data = (object) [
+                'id' => $this->plugin_file,
                 'slug' => $this->slug,
                 'plugin' => $this->plugin_file,
                 'new_version' => $remote_version,
@@ -162,13 +175,17 @@ class TBP_GitHub_Updater {
                 'package' => $this->get_download_url($release),
                 'icons' => [],
                 'banners' => [],
+                'banners_rtl' => [],
                 'requires' => '5.0',
                 'requires_php' => '7.4',
                 'tested' => get_bloginfo('version'),
+                'compatibility' => new stdClass(),
             ];
+            $transient->response[$this->plugin_file] = $update_data;
         } else {
-            // No update available
+            // No update available - still register in no_update for auto-update UI
             $transient->no_update[$this->plugin_file] = (object) [
+                'id' => $this->plugin_file,
                 'slug' => $this->slug,
                 'plugin' => $this->plugin_file,
                 'new_version' => $current_version,
@@ -184,7 +201,7 @@ class TBP_GitHub_Updater {
      * Plugin information for the update modal
      */
     public function plugin_info($result, $action, $args) {
-        if ($action !== 'plugin_information' || $args->slug !== $this->slug) {
+        if ($action !== 'plugin_information' || !isset($args->slug) || $args->slug !== $this->slug) {
             return $result;
         }
 
@@ -241,17 +258,17 @@ class TBP_GitHub_Updater {
             return $response;
         }
 
+        // GitHub zip extracts to folder like "tbpalbania-tbp-core-abc1234"
+        // We need to rename it to "tbp-core"
         $plugin_folder = WP_PLUGIN_DIR . '/' . $this->slug;
-        $wp_filesystem->move($result['destination'], $plugin_folder);
-        $result['destination'] = $plugin_folder;
+        
+        if ($result['destination'] !== $plugin_folder) {
+            $wp_filesystem->move($result['destination'], $plugin_folder);
+            $result['destination'] = $plugin_folder;
+        }
 
         // Clear update cache
         delete_transient($this->cache_key);
-
-        // Re-activate plugin if it was active
-        if (is_plugin_active($this->plugin_file)) {
-            activate_plugin($this->plugin_file);
-        }
 
         return $response;
     }
