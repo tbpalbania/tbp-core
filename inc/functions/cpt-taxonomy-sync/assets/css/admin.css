@@ -1,0 +1,387 @@
+/**
+ * TBP CPT Taxonomy Sync Admin Styles
+ */
+
+.tbp-cts-wrap {
+    max-width: 1200px;
+}
+
+/* Add New Rule Section */
+.tbp-cts-add-rule {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.tbp-cts-add-rule h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.tbp-cts-form-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.tbp-cts-form-group {
+    flex: 1;
+}
+
+.tbp-cts-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.tbp-cts-type-select {
+    display: flex;
+    gap: 10px;
+}
+
+.tbp-cts-type-select select {
+    flex: 1;
+    min-width: 150px;
+}
+
+.tbp-cts-arrow {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    color: #2271b1;
+    margin-top: 20px;
+}
+
+.tbp-cts-arrow .dashicons {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+}
+
+.tbp-cts-options-row {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    gap: 30px;
+}
+
+.tbp-cts-options-row .tbp-cts-form-group {
+    flex: 0 0 auto;
+}
+
+.tbp-cts-options-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.tbp-cts-form-actions {
+    padding-top: 10px;
+}
+
+/* Rules List */
+.tbp-cts-rules-list {
+    margin-top: 30px;
+}
+
+.tbp-cts-rules-list h2 {
+    margin-bottom: 15px;
+}
+
+.tbp-cts-no-rules {
+    background: #f9f9f9;
+    padding: 40px;
+    text-align: center;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* Table Columns */
+.tbp-cts-rules-list .column-status {
+    width: 70px;
+}
+
+.tbp-cts-rules-list .column-direction {
+    width: 60px;
+    text-align: center;
+}
+
+.tbp-cts-rules-list .column-actions {
+    width: 130px;
+}
+
+.tbp-cts-rules-list .column-last-sync {
+    width: 120px;
+}
+
+.tbp-cts-rules-list .column-source,
+.tbp-cts-rules-list .column-destination {
+    width: 25%;
+}
+
+/* Type Badges */
+.tbp-cts-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-right: 8px;
+}
+
+.tbp-cts-type-post_type {
+    background: #e5f5fa;
+    color: #0073aa;
+}
+
+.tbp-cts-type-taxonomy {
+    background: #fef8e7;
+    color: #9a6700;
+}
+
+/* Toggle Switch */
+.tbp-cts-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.tbp-cts-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.tbp-cts-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.tbp-cts-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.tbp-cts-toggle input:checked + .tbp-cts-toggle-slider {
+    background-color: #2271b1;
+}
+
+.tbp-cts-toggle input:checked + .tbp-cts-toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* Direction Icons */
+.column-direction .dashicons {
+    color: #666;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Actions Wrap */
+.tbp-cts-actions-wrap {
+    display: flex;
+    gap: 4px;
+}
+
+.tbp-cts-actions-wrap .button {
+    padding: 0 6px;
+    min-height: 28px;
+}
+
+.tbp-cts-actions-wrap .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 28px;
+}
+
+/* Sync Now Button */
+.tbp-cts-sync-now {
+    color: #2271b1;
+}
+
+.tbp-cts-sync-now:hover {
+    color: #135e96;
+}
+
+.tbp-cts-sync-now.is-syncing .dashicons {
+    animation: tbp-cts-spin 1s linear infinite;
+}
+
+@keyframes tbp-cts-spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* Edit Button */
+.tbp-cts-edit-rule {
+    color: #646970;
+}
+
+.tbp-cts-edit-rule:hover {
+    color: #2271b1;
+}
+
+/* Delete Button */
+.tbp-cts-delete-rule {
+    color: #a00;
+}
+
+.tbp-cts-delete-rule:hover {
+    color: #dc3232;
+    border-color: #dc3232;
+    background: #fef7f7;
+}
+
+/* Last Synced */
+.tbp-cts-last-sync {
+    color: #2271b1;
+    font-size: 12px;
+}
+
+.tbp-cts-never-synced {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Loading State */
+.tbp-cts-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Messages */
+.tbp-cts-message {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.tbp-cts-message-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.tbp-cts-message-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* Modal */
+.tbp-cts-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+}
+
+.tbp-cts-modal.is-open {
+    display: flex;
+}
+
+.tbp-cts-modal-content {
+    background: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.tbp-cts-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tbp-cts-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.tbp-cts-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.tbp-cts-modal-close:hover {
+    color: #d63638;
+}
+
+.tbp-cts-modal .tbp-cts-form {
+    padding: 20px;
+}
+
+.tbp-cts-modal .tbp-cts-form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .tbp-cts-form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tbp-cts-arrow {
+        transform: rotate(90deg);
+        margin: 0 auto;
+        width: 40px;
+        height: 40px;
+    }
+
+    .tbp-cts-options-row {
+        flex-wrap: wrap;
+    }
+
+    .tbp-cts-type-select {
+        flex-direction: column;
+    }
+}

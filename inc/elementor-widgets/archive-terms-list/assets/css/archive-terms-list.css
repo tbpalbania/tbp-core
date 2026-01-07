@@ -1,0 +1,103 @@
+/**
+ * Archive Terms List Widget Styles
+ */
+
+/* Base list styles */
+.tbp-atl {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+/* Vertical layout */
+.tbp-atl--vertical {
+    flex-direction: column;
+}
+
+/* Horizontal layout */
+.tbp-atl--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+/* Item wrapper */
+.tbp-atl__item-wrapper {
+    display: flex;
+}
+
+/* Item */
+.tbp-atl__item {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+/* Clickable items */
+a.tbp-atl__item:hover {
+    text-decoration: none;
+}
+
+a.tbp-atl__item:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+a.tbp-atl__item:focus:not(:focus-visible) {
+    outline: none;
+}
+
+a.tbp-atl__item:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Icon */
+.tbp-atl__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.tbp-atl__icon svg {
+    display: block;
+}
+
+/* Text */
+.tbp-atl__text {
+    flex: 1;
+    transition: color 0.2s ease;
+}
+
+/* Count */
+.tbp-atl__count {
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: color 0.2s ease;
+}
+
+/* Empty state */
+.tbp-atl__empty {
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Divider styles - handled via borders in selectors */
+.tbp-atl--has-divider.tbp-atl--vertical .tbp-atl__item-wrapper:not(:last-child) {
+    padding-bottom: inherit;
+}
+
+.tbp-atl--has-divider.tbp-atl--horizontal .tbp-atl__item-wrapper:not(:last-child) {
+    padding-right: inherit;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .tbp-atl--horizontal {
+        flex-direction: column;
+    }
+}

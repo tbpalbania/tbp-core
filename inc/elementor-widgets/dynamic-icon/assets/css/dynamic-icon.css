@@ -1,0 +1,94 @@
+/* TBP Dynamic Icon Widget Styles */
+
+.tbp-icon-wrapper {
+    display: block;
+    text-align: center;
+}
+
+.tbp-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.tbp-icon i {
+    line-height: 1;
+}
+
+.tbp-icon svg {
+    height: 1em;
+    width: 1em;
+    transition: fill 0.3s, stroke 0.3s;
+}
+
+.tbp-icon svg path,
+.tbp-icon svg circle,
+.tbp-icon svg rect,
+.tbp-icon svg polygon,
+.tbp-icon svg ellipse,
+.tbp-icon svg line,
+.tbp-icon svg polyline {
+    transition: fill 0.3s, stroke 0.3s;
+}
+
+.tbp-icon img {
+    height: 1em;
+    width: 1em;
+    object-fit: contain;
+}
+
+/* View - Default */
+.tbp-view-default .tbp-icon {
+    color: #818a91;
+}
+
+/* View - Stacked */
+.tbp-view-stacked .tbp-icon {
+    background-color: #818a91;
+    color: #fff;
+    fill: #fff;
+    padding: 0.5em;
+}
+
+.tbp-view-stacked .tbp-icon svg {
+    fill: #fff;
+}
+
+/* View - Framed */
+.tbp-view-framed .tbp-icon {
+    color: #818a91;
+    border: 3px solid #818a91;
+    background-color: transparent;
+    padding: 0.5em;
+}
+
+.tbp-view-framed .tbp-icon svg {
+    fill: #818a91;
+}
+
+/* Shape - Circle */
+.tbp-shape-circle .tbp-icon {
+    border-radius: 50%;
+}
+
+/* Shape - Rounded */
+.tbp-shape-rounded .tbp-icon {
+    border-radius: 10%;
+}
+
+/* Shape - Square */
+.tbp-shape-square .tbp-icon {
+    border-radius: 0;
+}
+
+/* Link styles */
+a.tbp-icon {
+    text-decoration: none;
+}
+
+/* Editor placeholder */
+.tbp-dynamic-placeholder {
+    opacity: 0.5;
+}

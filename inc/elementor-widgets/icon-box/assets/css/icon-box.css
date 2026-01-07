@@ -1,0 +1,99 @@
+/* TBP Icon Box Widget */
+
+.tbp-icon-box-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.tbp-icon-box-icon-wrapper {
+    display: inline-flex;
+    line-height: 1;
+}
+
+.tbp-icon-box-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.tbp-icon-box-icon svg {
+    width: 1em;
+    height: 1em;
+}
+
+.tbp-icon-box-content {
+    flex: 1;
+}
+
+.tbp-icon-box-title {
+    margin: 0 0 10px 0;
+    padding: 0;
+    line-height: 1.3;
+}
+
+.tbp-icon-box-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.tbp-icon-box-description {
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Position: Top (Default) */
+.tbp-icon-box-position-top .tbp-icon-box-wrapper {
+    flex-direction: column;
+    align-items: center;
+}
+
+.tbp-icon-box-position-top .tbp-icon-box-icon-wrapper {
+    justify-content: center;
+}
+
+/* Position: Left */
+.tbp-icon-box-position-left .tbp-icon-box-wrapper {
+    flex-direction: row;
+}
+
+.tbp-icon-box-position-left .tbp-icon-box-icon-wrapper {
+    flex-shrink: 0;
+}
+
+/* Position: Right */
+.tbp-icon-box-position-right .tbp-icon-box-wrapper {
+    flex-direction: row-reverse;
+}
+
+.tbp-icon-box-position-right .tbp-icon-box-icon-wrapper {
+    flex-shrink: 0;
+}
+
+/* View: Stacked */
+.tbp-icon-box-view-stacked .tbp-icon-box-icon {
+    padding: 20px;
+}
+
+/* View: Framed */
+.tbp-icon-box-view-framed .tbp-icon-box-icon {
+    padding: 20px;
+    border: 3px solid;
+    border-style: solid;
+}
+
+/* Shape: Square */
+.tbp-icon-box-shape-square .tbp-icon-box-icon {
+    border-radius: 0;
+}
+
+/* Shape: Rounded */
+.tbp-icon-box-shape-rounded .tbp-icon-box-icon {
+    border-radius: 10px;
+}
+
+/* Shape: Circle */
+.tbp-icon-box-shape-circle .tbp-icon-box-icon {
+    border-radius: 50%;
+}

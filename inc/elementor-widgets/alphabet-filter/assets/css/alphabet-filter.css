@@ -1,0 +1,171 @@
+/* TBP Alphabet Filter Widget Styles */
+
+.tbp-alphabet-filter {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+}
+
+/* Search Input (Full Width) */
+.tbp-alphabet-search {
+    width: 100%;
+}
+
+.tbp-alphabet-search input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.tbp-alphabet-search input:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.tbp-alphabet-search input::placeholder {
+    color: #999;
+}
+
+/* All & Clear Buttons (Full Width) */
+.tbp-alphabet-all,
+.tbp-alphabet-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 15px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.tbp-alphabet-all:hover,
+.tbp-alphabet-clear:hover {
+    color: #fff;
+    background-color: #333;
+    border-color: #333;
+}
+
+.tbp-alphabet-all.is-active {
+    color: #fff;
+    background-color: #0073aa;
+    border-color: #0073aa;
+}
+
+/* Letters Grid (4 Columns) */
+.tbp-alphabet-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+/* Letter styles */
+.tbp-alphabet-letter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.tbp-alphabet-letter:hover:not(.is-inactive) {
+    color: #fff;
+    background-color: #333;
+    border-color: #333;
+}
+
+/* Active state */
+.tbp-alphabet-letter.is-active {
+    color: #fff;
+    background-color: #0073aa;
+    border-color: #0073aa;
+}
+
+/* Inactive state */
+.tbp-alphabet-letter.is-inactive {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.5;
+    color: #999;
+    background-color: #f9f9f9;
+    border-color: #eee;
+}
+
+/* Loading state */
+.tbp-alphabet-filter.is-loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.tbp-alphabet-filter.is-loading .tbp-alphabet-letter,
+.tbp-alphabet-filter.is-loading .tbp-alphabet-all,
+.tbp-alphabet-filter.is-loading .tbp-alphabet-clear,
+.tbp-alphabet-filter.is-loading .tbp-alphabet-search input {
+    cursor: wait;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .tbp-alphabet-filter {
+        height: auto !important;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .tbp-alphabet-grid {
+        grid-template-columns: repeat(7, 1fr);
+        height: auto;
+    }
+
+    .tbp-alphabet-letter {
+        font-size: 12px;
+        aspect-ratio: auto;
+        padding: 8px 4px;
+        min-height: 32px;
+        height: auto;
+    }
+
+    .tbp-alphabet-all,
+    .tbp-alphabet-clear {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .tbp-alphabet-search input {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .tbp-alphabet-letter {
+        font-size: 11px;
+        padding: 6px 2px;
+        min-height: 28px;
+    }
+}

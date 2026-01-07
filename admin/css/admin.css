@@ -1,0 +1,83 @@
+/* TBP Core Admin Styles */
+
+.tbp-info-modal {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.tbp-info-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 0;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.tbp-info-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #dcdcde;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tbp-info-modal-header h2 {
+    margin: 0;
+}
+
+.tbp-info-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    color: #646970;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 1;
+}
+
+.tbp-info-modal-close:hover {
+    color: #000;
+}
+
+.tbp-info-modal-body {
+    padding: 20px;
+}
+
+.tbp-info-modal-body dl {
+    margin: 0;
+}
+
+.tbp-info-modal-body dt {
+    font-weight: 600;
+    margin-bottom: 5px;
+    margin-top: 15px;
+}
+
+.tbp-info-modal-body dt:first-child {
+    margin-top: 0;
+}
+
+.tbp-info-modal-body dd {
+    margin: 0 0 10px 0;
+    color: #646970;
+}
+
+/* Settings page styles */
+.tbp-settings-content {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
