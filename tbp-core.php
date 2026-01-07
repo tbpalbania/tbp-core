@@ -40,6 +40,15 @@ final class TBP_Core {
 
     public function __construct() {
         $this->init_hooks();
+        $this->init_updater();
+    }
+
+    /**
+     * Initialize GitHub updater
+     */
+    private function init_updater() {
+        require_once TBP_CORE_PATH . 'admin/update/class-github-updater.php';
+        new TBP_GitHub_Updater();
     }
 
     private function init_hooks() {
