@@ -30,6 +30,48 @@ class TBP_GitHub_Updater {
         add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
         add_filter('upgrader_post_install', [$this, 'post_install'], 10, 3);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
+
+        // Enable auto-updates support
+        add_filter('plugin_auto_update_setting_html', [$this, 'auto_update_setting_html'], 10, 3);
+    }
+
+    /**
+     * Enable auto-update toggle for this plugin
+     */
+    public function auto_update_setting_html($html, $plugin_file, $plugin_data) {
+        if ($plugin_file !== $this->plugin_file) {
+            return $html;
+        }
+
+        // Generate auto-update toggle if not present
+        if (empty($html)) {
+            $auto_updates = (array) get_site_option('auto_update_plugins', []);
+            $is_enabled = in_array($this->plugin_file, $auto_updates, true);
+
+            if ($is_enabled) {
+                $text = __('Disable auto-updates');
+                $action = 'disable';
+            } else {
+                $text = __('Enable auto-updates');
+                $action = 'enable';
+            }
+
+            $query_args = [
+                'action' => $action . '-auto-update',
+                'plugin' => $this->plugin_file,
+                'paged' => 1,
+            ];
+            $url = add_query_arg($query_args, 'plugins.php');
+
+            $html = sprintf(
+                '<a href="%s" class="toggle-auto-update aria-button-if-js" data-wp-action="%s"><span class="dashicons dashicons-update spin hidden" aria-hidden="true"></span><span class="label">%s</span></a>',
+                wp_nonce_url($url, 'updates'),
+                $action,
+                esc_html($text)
+            );
+        }
+
+        return $html;
     }
 
     /**
