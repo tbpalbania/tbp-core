@@ -555,7 +555,15 @@ class TBP_Google_Integration {
      * AJAX: Get Firebase custom token
      */
     public function ajax_get_firebase_token() {
-        check_ajax_referer('tbp_google_nonce', 'nonce');
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'tbp_google_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+        }
+
+        // Check user is logged in
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => 'User not logged in']);
+        }
 
         $token = $this->generate_firebase_token();
 

@@ -3,7 +3,7 @@
  * Plugin Name: TBP Core
  * Plugin URI: https://tbp.al
  * Description: Core functionality for TBP - Functions, Queries, Elementor Widgets, and Dynamic Tags
- * Version: 1.0.73
+ * Version: 1.0.74
  * Author: Trusted Business Partners
  * Author URI: https://tbp.al
  * Text Domain: tbp-core
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('TBP_CORE_VERSION', '1.0.73');
+define('TBP_CORE_VERSION', '1.0.74');
 define('TBP_CORE_FILE', __FILE__);
 define('TBP_CORE_PATH', plugin_dir_path(__FILE__));
 define('TBP_CORE_URL', plugin_dir_url(__FILE__));
