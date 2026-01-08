@@ -555,23 +555,29 @@ class TBP_Google_Integration {
      * AJAX: Get Firebase custom token
      */
     public function ajax_get_firebase_token() {
-        // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'tbp_google_nonce')) {
-            wp_send_json_error(['message' => 'Invalid nonce']);
+        try {
+            // Verify nonce
+            if (!wp_verify_nonce($_POST['nonce'] ?? '', 'tbp_google_nonce')) {
+                wp_send_json_error(['message' => 'Invalid nonce']);
+            }
+
+            // Check user is logged in
+            if (!is_user_logged_in()) {
+                wp_send_json_error(['message' => 'User not logged in']);
+            }
+
+            $token = $this->generate_firebase_token();
+
+            if (is_wp_error($token)) {
+                wp_send_json_error(['message' => $token->get_error_message()]);
+            }
+
+            wp_send_json_success(['token' => $token]);
+        } catch (Exception $e) {
+            wp_send_json_error(['message' => 'Exception: ' . $e->getMessage()]);
+        } catch (Error $e) {
+            wp_send_json_error(['message' => 'Error: ' . $e->getMessage()]);
         }
-
-        // Check user is logged in
-        if (!is_user_logged_in()) {
-            wp_send_json_error(['message' => 'User not logged in']);
-        }
-
-        $token = $this->generate_firebase_token();
-
-        if (is_wp_error($token)) {
-            wp_send_json_error(['message' => $token->get_error_message()]);
-        }
-
-        wp_send_json_success(['token' => $token]);
     }
 
     /**
@@ -702,6 +708,11 @@ class TBP_Google_Integration {
 
 // Initialize
 TBP_Google_Integration::instance();
+
+// Fallback AJAX handler in case class isn't loaded properly
+add_action('wp_ajax_tbp_firebase_custom_token_test', function() {
+    wp_send_json_success(['message' => 'Google Integration module is loaded']);
+});
 
 // =============================================================================
 // HELPER FUNCTIONS
