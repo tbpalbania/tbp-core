@@ -58,6 +58,7 @@
                 // Get custom token from WordPress
                 fetch(tbpGoogle.restUrl + 'firebase-token', {
                     method: 'GET',
+                    credentials: 'same-origin',
                     headers: {
                         'X-WP-Nonce': tbpGoogle.restNonce,
                     },
