@@ -198,9 +198,10 @@ class TBP_Google_Integration {
             // Firebase Admin
             'tbp_firebase_service_account' => [
                 'title' => __('Service Account JSON', 'tbp-core'),
-                'type' => 'textarea',
+                'type' => 'file_upload',
                 'section' => 'tbp_firebase_admin',
-                'description' => __('Paste the entire service account JSON file contents here. Required for custom token generation.', 'tbp-core'),
+                'accept' => '.json',
+                'description' => __('Upload the service account JSON file from Firebase Console. Required for custom token generation.', 'tbp-core'),
             ],
         ];
         return $fields;
@@ -427,13 +428,20 @@ class TBP_Google_Integration {
             return new WP_Error('not_logged_in', 'User must be logged in');
         }
 
-        $service_account = $this->settings['firebase_service_account'];
-        if (empty($service_account)) {
+        $service_account_path = $this->settings['firebase_service_account'];
+        if (empty($service_account_path)) {
             return new WP_Error('not_configured', 'Firebase service account not configured');
         }
 
-        // WordPress escapes data - unescape it
-        $service_account = stripslashes($service_account);
+        // Read from file
+        if (!file_exists($service_account_path)) {
+            return new WP_Error('file_not_found', 'Service account file not found: ' . $service_account_path);
+        }
+
+        $service_account = file_get_contents($service_account_path);
+        if ($service_account === false) {
+            return new WP_Error('file_read_error', 'Could not read service account file');
+        }
 
         $sa = json_decode($service_account, true);
         if (!$sa || !isset($sa['private_key']) || !isset($sa['client_email'])) {

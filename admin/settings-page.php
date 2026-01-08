@@ -25,6 +25,37 @@ if (isset($_POST['tbp_core_settings_nonce']) && wp_verify_nonce($_POST['tbp_core
 
             if ($field_type === 'checkbox') {
                 $value = isset($_POST[$field_id]) ? '1' : '';
+            } elseif ($field_type === 'file_upload') {
+                // Handle file upload
+                $file_key = $field_id . '_file';
+                if (!empty($_FILES[$file_key]['tmp_name'])) {
+                    $upload_dir = WP_CONTENT_DIR . '/tbp-private/';
+
+                    // Create directory if it doesn't exist
+                    if (!file_exists($upload_dir)) {
+                        wp_mkdir_p($upload_dir);
+                        // Add .htaccess to protect directory
+                        file_put_contents($upload_dir . '.htaccess', "Order deny,allow\nDeny from all");
+                        // Add index.php for extra protection
+                        file_put_contents($upload_dir . 'index.php', '<?php // Silence is golden');
+                    }
+
+                    // Generate unique filename
+                    $filename = sanitize_file_name($_FILES[$file_key]['name']);
+                    $dest_path = $upload_dir . $filename;
+
+                    // Delete old file if exists
+                    $old_path = get_option($field_id, '');
+                    if ($old_path && file_exists($old_path)) {
+                        @unlink($old_path);
+                    }
+
+                    // Move uploaded file
+                    if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $dest_path)) {
+                        update_option($field_id, $dest_path);
+                    }
+                }
+                continue; // Skip the normal update below
             } else {
                 $value = isset($_POST[$field_id]) ? sanitize_text_field($_POST[$field_id]) : '';
             }
@@ -56,7 +87,7 @@ $fields = isset($all_fields[$current_tab]) ? $all_fields[$current_tab] : [];
     </h2>
 
     <div class="tbp-settings-content" style="margin-top: 20px;">
-        <form method="post" action="">
+        <form method="post" action="" enctype="multipart/form-data">
             <?php wp_nonce_field('tbp_core_save_settings', 'tbp_core_settings_nonce'); ?>
 
             <?php if (empty($sections) && empty($fields)): ?>
@@ -141,6 +172,30 @@ $fields = isset($all_fields[$current_tab]) ? $all_fields[$current_tab] : [];
                                                     >
                                                     <?php echo esc_html($field['checkbox_label'] ?? __('Enable', 'tbp-core')); ?>
                                                 </label>
+                                                <?php break;
+
+                                            case 'file_upload': ?>
+                                                <div class="tbp-file-upload-wrapper">
+                                                    <?php if ($value && file_exists($value)): ?>
+                                                        <div class="tbp-file-uploaded" style="margin-bottom: 10px; padding: 10px; background: #f0f6fc; border: 1px solid #c3c4c7; border-radius: 4px;">
+                                                            <span class="dashicons dashicons-yes-alt" style="color: #00a32a;"></span>
+                                                            <?php echo esc_html__('File uploaded:', 'tbp-core'); ?>
+                                                            <code><?php echo esc_html(basename($value)); ?></code>
+                                                            <button type="button" class="button button-link-delete tbp-remove-file" data-field="<?php echo esc_attr($field_id); ?>" style="margin-left: 10px;">
+                                                                <?php echo esc_html__('Remove', 'tbp-core'); ?>
+                                                            </button>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <input type="file"
+                                                           id="<?php echo esc_attr($field_id); ?>_file"
+                                                           name="<?php echo esc_attr($field_id); ?>_file"
+                                                           accept="<?php echo esc_attr($field['accept'] ?? '.json'); ?>"
+                                                           class="regular-text">
+                                                    <input type="hidden"
+                                                           id="<?php echo esc_attr($field_id); ?>"
+                                                           name="<?php echo esc_attr($field_id); ?>"
+                                                           value="<?php echo esc_attr($value); ?>">
+                                                </div>
                                                 <?php break;
 
                                         endswitch; ?>
