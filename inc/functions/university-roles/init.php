@@ -99,6 +99,32 @@ class TBP_University_Roles {
 
         // Hide admin bar for university roles
         add_action('after_setup_theme', [$this, 'hide_admin_bar']);
+
+        // Remove website field from user profiles
+        add_filter('user_contactmethods', [$this, 'remove_website_field'], 10, 2);
+        add_action('admin_head', [$this, 'hide_website_field_css']);
+    }
+
+    /**
+     * Remove website from contact methods
+     */
+    public function remove_website_field($methods, $user = null) {
+        unset($methods['url']);
+        return $methods;
+    }
+
+    /**
+     * Hide website field with CSS (for core fields)
+     */
+    public function hide_website_field_css() {
+        $screen = get_current_screen();
+        if ($screen && in_array($screen->id, ['user-edit', 'profile', 'user-new', 'user'])) {
+            ?>
+            <style>
+                .user-url-wrap { display: none !important; }
+            </style>
+            <?php
+        }
     }
 
     /**

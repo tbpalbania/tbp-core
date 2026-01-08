@@ -1,0 +1,27 @@
+/* Subject & Theme Admin Styles */
+
+.tbp-subject-fields th,
+.tbp-theme-fields th {
+    width: 150px;
+    padding-top: 15px;
+}
+
+.tbp-subject-fields td,
+.tbp-theme-fields td {
+    padding-top: 10px;
+}
+
+.tbp-linked-subjects {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tbp-linked-subjects li {
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.tbp-linked-subjects li:last-child {
+    border-bottom: 0;
+}
