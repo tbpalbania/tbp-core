@@ -1,7 +1,9 @@
 CLAUDE.md
+TODO.md
 .git
 .gitignore
 .distignore
 .DS_Store
 *.log
 node_modules/
+user-uploads/
