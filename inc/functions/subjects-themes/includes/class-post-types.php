@@ -1,13 +1,13 @@
 <?php
 /**
- * Register Subject and Theme Post Types
+ * Register Subject and Topic Post Types
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class TBP_Subject_Theme_Post_Types {
+class TBP_Subject_Topic_Post_Types {
 
     private static $instance = null;
 
@@ -50,43 +50,43 @@ class TBP_Subject_Theme_Post_Types {
             'capability_type' => 'post',
             'has_archive' => true,
             'hierarchical' => false,
-            'supports' => ['title', 'editor', 'thumbnail', 'excerpt'],
+            'supports' => ['title', 'editor', 'excerpt'],
             'show_in_rest' => true,
         ];
 
         register_post_type('tbp_subject', $subject_args);
 
-        // Theme Post Type
-        $theme_labels = [
-            'name' => __('Themes', 'tbp-core'),
-            'singular_name' => __('Theme', 'tbp-core'),
+        // Topic Post Type
+        $topic_labels = [
+            'name' => __('Topics', 'tbp-core'),
+            'singular_name' => __('Topic', 'tbp-core'),
             'add_new' => __('Add New', 'tbp-core'),
-            'add_new_item' => __('Add New Theme', 'tbp-core'),
-            'edit_item' => __('Edit Theme', 'tbp-core'),
-            'new_item' => __('New Theme', 'tbp-core'),
-            'view_item' => __('View Theme', 'tbp-core'),
-            'search_items' => __('Search Themes', 'tbp-core'),
-            'not_found' => __('No themes found', 'tbp-core'),
-            'not_found_in_trash' => __('No themes found in trash', 'tbp-core'),
-            'menu_name' => __('Themes', 'tbp-core'),
+            'add_new_item' => __('Add New Topic', 'tbp-core'),
+            'edit_item' => __('Edit Topic', 'tbp-core'),
+            'new_item' => __('New Topic', 'tbp-core'),
+            'view_item' => __('View Topic', 'tbp-core'),
+            'search_items' => __('Search Topics', 'tbp-core'),
+            'not_found' => __('No topics found', 'tbp-core'),
+            'not_found_in_trash' => __('No topics found in trash', 'tbp-core'),
+            'menu_name' => __('Topics', 'tbp-core'),
         ];
 
-        $theme_args = [
-            'labels' => $theme_labels,
+        $topic_args = [
+            'labels' => $topic_labels,
             'public' => true,
             'publicly_queryable' => true,
             'show_ui' => true,
             'show_in_menu' => false, // We'll add to TBP Core menu
             'query_var' => true,
-            'rewrite' => ['slug' => 'theme'],
+            'rewrite' => ['slug' => 'topic'],
             'capability_type' => 'post',
             'has_archive' => true,
             'hierarchical' => false,
-            'supports' => ['title', 'editor', 'thumbnail'],
+            'supports' => ['title', 'editor'],
             'show_in_rest' => true,
         ];
 
-        register_post_type('tbp_theme', $theme_args);
+        register_post_type('tbp_topic', $topic_args);
     }
 
     public function add_admin_menus() {
@@ -101,13 +101,13 @@ class TBP_Subject_Theme_Post_Types {
             0
         );
 
-        // Add Themes as second item (position 1)
+        // Add Topics as second item (position 1)
         add_submenu_page(
             'tbp-academic',
-            __('Themes', 'tbp-core'),
-            __('Themes', 'tbp-core'),
+            __('Topics', 'tbp-core'),
+            __('Topics', 'tbp-core'),
             'edit_posts',
-            'edit.php?post_type=tbp_theme',
+            'edit.php?post_type=tbp_topic',
             null,
             1
         );

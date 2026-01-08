@@ -1,0 +1,695 @@
+/**
+ * TBP Firebase Messaging Styles
+ *
+ * Floating chat UI similar to Messenger/LinkedIn
+ */
+
+/* ========================================
+   Variables
+   ======================================== */
+.tbp-messaging {
+    --msg-primary: #0B1521;
+    --msg-accent: #5CD4D6;
+    --msg-accent-dark: #3DBFC1;
+    --msg-text: #011A29;
+    --msg-text-muted: #6B7280;
+    --msg-border: #E5E7EB;
+    --msg-bg: #FFFFFF;
+    --msg-bg-alt: #F9F9F9;
+    --msg-online: #22C55E;
+    --msg-offline: #9CA3AF;
+    --msg-radius: 12px;
+    --msg-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --msg-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   Floating Action Button
+   ======================================== */
+.tbp-messaging-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--msg-primary);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--msg-shadow);
+    transition: all 0.2s ease;
+    z-index: 9990;
+}
+
+.tbp-messaging-fab:hover {
+    transform: scale(1.05);
+    box-shadow: var(--msg-shadow-lg);
+}
+
+.tbp-messaging-fab:active {
+    transform: scale(0.95);
+}
+
+.tbp-messaging-fab-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: #E73755;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================================
+   Offcanvas Panel
+   ======================================== */
+.tbp-messaging-offcanvas {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    width: 320px;
+    max-height: calc(100vh - 120px);
+    background: var(--msg-bg);
+    border-radius: var(--msg-radius);
+    box-shadow: var(--msg-shadow-lg);
+    display: flex;
+    flex-direction: column;
+    z-index: 9991;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tbp-messaging-offcanvas.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.tbp-messaging-offcanvas-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--msg-border);
+}
+
+.tbp-messaging-offcanvas-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--msg-text);
+}
+
+.tbp-messaging-offcanvas-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--msg-bg-alt);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--msg-text-muted);
+    transition: all 0.15s ease;
+}
+
+.tbp-messaging-offcanvas-close:hover {
+    background: var(--msg-border);
+    color: var(--msg-text);
+}
+
+/* Search */
+.tbp-messaging-offcanvas-search {
+    padding: 12px 16px;
+    position: relative;
+}
+
+.tbp-messaging-offcanvas-search i {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--msg-text-muted);
+    font-size: 16px;
+}
+
+.tbp-messaging-offcanvas-search input {
+    width: 100%;
+    padding: 10px 12px 10px 36px;
+    border: 1px solid var(--msg-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--msg-bg-alt);
+    transition: all 0.15s ease;
+}
+
+.tbp-messaging-offcanvas-search input:focus {
+    outline: none;
+    border-color: var(--msg-accent);
+    background: var(--msg-bg);
+}
+
+/* Tabs */
+.tbp-messaging-offcanvas-tabs {
+    display: flex;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--msg-border);
+}
+
+.tbp-messaging-tab {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--msg-text-muted);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: color 0.15s ease;
+}
+
+.tbp-messaging-tab:hover {
+    color: var(--msg-text);
+}
+
+.tbp-messaging-tab.active {
+    color: var(--msg-accent-dark);
+}
+
+.tbp-messaging-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--msg-accent);
+    border-radius: 2px 2px 0 0;
+}
+
+.tbp-messaging-tab-count {
+    padding: 2px 6px;
+    background: var(--msg-bg-alt);
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.tbp-messaging-tab.active .tbp-messaging-tab-count {
+    background: rgba(92, 212, 214, 0.15);
+    color: var(--msg-accent-dark);
+}
+
+/* Users List */
+.tbp-messaging-offcanvas-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.tbp-messaging-users-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.tbp-messaging-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.tbp-messaging-user:hover {
+    background: var(--msg-bg-alt);
+}
+
+.tbp-messaging-user-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.tbp-messaging-user-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tbp-messaging-user-avatar .status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--msg-bg);
+    background: var(--msg-offline);
+}
+
+.tbp-messaging-user-avatar .status-dot.online {
+    background: var(--msg-online);
+}
+
+.tbp-messaging-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tbp-messaging-user-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--msg-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tbp-messaging-user-role {
+    display: block;
+    font-size: 12px;
+    color: var(--msg-text-muted);
+}
+
+.tbp-messaging-user-unread {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--msg-accent);
+    color: var(--msg-primary);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Empty State */
+.tbp-messaging-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--msg-text-muted);
+}
+
+.tbp-messaging-empty i {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.tbp-messaging-empty p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* ========================================
+   Chat Windows
+   ======================================== */
+.tbp-messaging-chats {
+    position: fixed;
+    bottom: 0;
+    right: 360px;
+    display: flex;
+    gap: 12px;
+    z-index: 9989;
+    pointer-events: none;
+}
+
+.tbp-chat-window {
+    width: 328px;
+    height: 420px;
+    background: var(--msg-bg);
+    border-radius: var(--msg-radius) var(--msg-radius) 0 0;
+    box-shadow: var(--msg-shadow-lg);
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tbp-chat-window.is-open {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.tbp-chat-window.is-minimized {
+    height: 48px;
+}
+
+.tbp-chat-window.is-minimized .tbp-chat-body,
+.tbp-chat-window.is-minimized .tbp-chat-footer {
+    display: none;
+}
+
+/* Chat Header */
+.tbp-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--msg-primary);
+    border-radius: var(--msg-radius) var(--msg-radius) 0 0;
+    cursor: pointer;
+}
+
+.tbp-chat-header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.tbp-chat-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.tbp-chat-avatar img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tbp-chat-status {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--msg-primary);
+    background: var(--msg-offline);
+}
+
+.tbp-chat-status.online {
+    background: var(--msg-online);
+}
+
+.tbp-chat-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tbp-chat-user-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tbp-chat-user-status {
+    display: block;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.tbp-chat-header-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.tbp-chat-minimize,
+.tbp-chat-close {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.15s ease;
+}
+
+.tbp-chat-minimize:hover,
+.tbp-chat-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* Chat Body */
+.tbp-chat-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tbp-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Messages */
+.tbp-chat-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.tbp-chat-message.sent {
+    align-self: flex-end;
+}
+
+.tbp-chat-message.received {
+    align-self: flex-start;
+}
+
+.tbp-chat-message-bubble {
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.tbp-chat-message.sent .tbp-chat-message-bubble {
+    background: var(--msg-accent);
+    color: var(--msg-primary);
+    border-bottom-right-radius: 4px;
+}
+
+.tbp-chat-message.received .tbp-chat-message-bubble {
+    background: var(--msg-bg-alt);
+    color: var(--msg-text);
+    border-bottom-left-radius: 4px;
+}
+
+.tbp-chat-message-time {
+    font-size: 10px;
+    color: var(--msg-text-muted);
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+.tbp-chat-message.sent .tbp-chat-message-time {
+    text-align: right;
+}
+
+/* Typing Indicator */
+.tbp-chat-typing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--msg-text-muted);
+}
+
+.tbp-chat-typing-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.tbp-chat-typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--msg-text-muted);
+    border-radius: 50%;
+    animation: tbp-typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.tbp-chat-typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.tbp-chat-typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes tbp-typing-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* Chat Footer */
+.tbp-chat-footer {
+    padding: 12px;
+    border-top: 1px solid var(--msg-border);
+}
+
+.tbp-chat-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--msg-bg-alt);
+    border-radius: 20px;
+    padding: 4px 4px 4px 16px;
+}
+
+.tbp-chat-input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--msg-text);
+    padding: 8px 0;
+}
+
+.tbp-chat-input:focus {
+    outline: none;
+}
+
+.tbp-chat-input::placeholder {
+    color: var(--msg-text-muted);
+}
+
+.tbp-chat-send {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--msg-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--msg-primary);
+    transition: all 0.15s ease;
+}
+
+.tbp-chat-send:hover {
+    background: var(--msg-accent-dark);
+    transform: scale(1.05);
+}
+
+.tbp-chat-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Empty Chat State */
+.tbp-chat-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    color: var(--msg-text-muted);
+}
+
+.tbp-chat-empty i {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.tbp-chat-empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+    .tbp-messaging-fab {
+        bottom: 16px;
+        right: 16px;
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+    }
+
+    .tbp-messaging-offcanvas {
+        right: 16px;
+        bottom: 76px;
+        width: calc(100vw - 32px);
+        max-width: 360px;
+    }
+
+    .tbp-messaging-chats {
+        right: 16px;
+        left: 16px;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .tbp-chat-window {
+        width: 100%;
+        max-width: 360px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tbp-messaging-offcanvas {
+        right: 0;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 70vh;
+        border-radius: var(--msg-radius) var(--msg-radius) 0 0;
+    }
+
+    .tbp-chat-window {
+        position: fixed;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .tbp-chat-window.is-minimized {
+        height: 48px;
+        position: relative;
+    }
+}

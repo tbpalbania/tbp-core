@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 // Define field constants
 define('TBP_ACF_DROPZONE_PATH', plugin_dir_path(__FILE__));
 define('TBP_ACF_DROPZONE_URL', plugin_dir_url(__FILE__));
-define('TBP_ACF_DROPZONE_VERSION', '1.0.0');
+define('TBP_ACF_DROPZONE_VERSION', '1.0.3');
 
 /**
  * ACF Dropzone Field Type
@@ -124,19 +124,13 @@ class TBP_ACF_Field_Dropzone extends acf_field {
      */
     public function render_field($field) {
         $value = $field['value'];
-        $file_ids = [];
+        $files_data = [];
 
-        if (!empty($value)) {
-            if (is_array($value)) {
-                foreach ($value as $file) {
-                    if (is_array($file) && isset($file['ID'])) {
-                        $file_ids[] = $file['ID'];
-                    } elseif (is_numeric($file)) {
-                        $file_ids[] = intval($file);
-                    }
-                }
-            } elseif (is_numeric($value)) {
-                $file_ids[] = intval($value);
+        // Parse existing value - stored as JSON string
+        if (!empty($value) && is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $files_data = $decoded;
             }
         }
 
@@ -177,8 +171,11 @@ class TBP_ACF_Field_Dropzone extends acf_field {
             </div>
 
             <div class="tbp-dropzone-files">
-                <?php foreach ($file_ids as $file_id) :
+                <?php foreach ($files_data as $file_data) :
+                    $file_id = $file_data['id'];
+                    $custom_title = $file_data['title'] ?? '';
                     $file_path = get_attached_file($file_id);
+                    if (!$file_path) continue;
                     $file_name = basename($file_path);
                     $file_type = wp_check_filetype($file_name);
                     $file_size = file_exists($file_path) ? size_format(filesize($file_path)) : '';
@@ -195,7 +192,11 @@ class TBP_ACF_Field_Dropzone extends acf_field {
                         <?php endif; ?>
                     </div>
                     <div class="tbp-dropzone-file-info">
-                        <span class="tbp-dropzone-file-name"><?php echo esc_html($file_name); ?></span>
+                        <input type="text"
+                               class="tbp-dropzone-file-title"
+                               value="<?php echo esc_attr($custom_title); ?>"
+                               placeholder="<?php echo esc_attr($file_name); ?>"
+                               title="<?php esc_attr_e('Click to edit title', 'tbp-core'); ?>">
                         <span class="tbp-dropzone-file-meta"><?php echo esc_html($file_ext . ($file_size ? ' • ' . $file_size : '')); ?></span>
                     </div>
                     <button type="button" class="tbp-dropzone-file-remove" title="<?php esc_attr_e('Remove', 'tbp-core'); ?>">
@@ -205,7 +206,13 @@ class TBP_ACF_Field_Dropzone extends acf_field {
                 <?php endforeach; ?>
             </div>
 
-            <input type="hidden" name="<?php echo esc_attr($field['name']); ?>" value="<?php echo esc_attr(implode(',', $file_ids)); ?>" class="tbp-dropzone-input">
+            <?php
+            acf_hidden_input([
+                'name' => $field['name'],
+                'value' => json_encode($files_data),
+                'class' => 'tbp-dropzone-input',
+            ]);
+            ?>
         </div>
         <?php
     }
@@ -245,28 +252,65 @@ class TBP_ACF_Field_Dropzone extends acf_field {
     }
 
     /**
-     * Format value for API
+     * Load value from database
+     */
+    public function load_value($value, $post_id, $field) {
+        // Ensure we always return a string (JSON) or empty string
+        if (empty($value)) {
+            return '';
+        }
+
+        // If already a JSON string, return as-is
+        if (is_string($value)) {
+            return $value;
+        }
+
+        // If it's an array (shouldn't happen but just in case), convert to JSON
+        if (is_array($value)) {
+            return json_encode($value);
+        }
+
+        return '';
+    }
+
+    /**
+     * Format value for API - value is stored as JSON string
      */
     public function format_value($value, $post_id, $field) {
         if (empty($value)) {
             return $field['max_files'] === 1 ? false : [];
         }
 
-        $file_ids = is_array($value) ? $value : explode(',', $value);
-        $file_ids = array_filter(array_map('intval', $file_ids));
+        // Parse the JSON string
+        $files_data = [];
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $files_data = $decoded;
+            }
+        }
 
-        if (empty($file_ids)) {
+        if (empty($files_data)) {
             return $field['max_files'] === 1 ? false : [];
         }
 
         $files = [];
 
-        foreach ($file_ids as $file_id) {
+        foreach ($files_data as $file_data) {
+            $file_id = intval($file_data['id'] ?? 0);
+            $custom_title = $file_data['title'] ?? '';
+
+            if (!$file_id) continue;
+
             $file = acf_get_attachment($file_id);
 
             if (!$file) {
                 continue;
             }
+
+            // Add custom title to the file array
+            $file['custom_title'] = $custom_title;
+            $file['display_title'] = $custom_title ?: $file['filename'];
 
             switch ($field['return_format']) {
                 case 'url':
@@ -290,18 +334,33 @@ class TBP_ACF_Field_Dropzone extends acf_field {
     }
 
     /**
-     * Update value before save
+     * Update value before save - always store as JSON string
      */
     public function update_value($value, $post_id, $field) {
         if (empty($value)) {
-            return [];
+            return '';
         }
 
         if (is_string($value)) {
-            $value = explode(',', $value);
+            // WordPress adds slashes to POST data - remove them for JSON parsing
+            $clean_value = stripslashes($value);
+            $decoded = json_decode($clean_value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $clean = [];
+                foreach ($decoded as $item) {
+                    if (is_array($item) && !empty($item['id'])) {
+                        $clean[] = [
+                            'id' => intval($item['id']),
+                            'title' => sanitize_text_field($item['title'] ?? '')
+                        ];
+                    }
+                }
+                return !empty($clean) ? json_encode($clean) : '';
+            }
         }
 
-        return array_filter(array_map('intval', $value));
+        return '';
     }
 
     /**
@@ -316,11 +375,17 @@ class TBP_ACF_Field_Dropzone extends acf_field {
             return $valid;
         }
 
-        $file_ids = is_array($value) ? $value : explode(',', $value);
-        $file_ids = array_filter(array_map('intval', $file_ids));
+        // Parse value - expect JSON string
+        $files_data = [];
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $files_data = $decoded;
+            }
+        }
 
         // Check max files
-        if ($field['max_files'] > 0 && count($file_ids) > $field['max_files']) {
+        if ($field['max_files'] > 0 && count($files_data) > $field['max_files']) {
             return sprintf(__('Maximum %d files allowed.', 'tbp-core'), $field['max_files']);
         }
 

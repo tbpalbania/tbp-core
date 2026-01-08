@@ -4,12 +4,21 @@
 
 .tbp-dropzone-wrapper {
     width: 100%;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.tbp-dropzone-wrapper.tbp-dropzone-vertical {
+    flex-direction: column;
 }
 
 .tbp-dropzone-area {
+    flex: 0 0 200px;
+    min-width: 200px;
     border: 2px dashed #ccd0d4;
     border-radius: 4px;
-    padding: 40px 20px;
+    padding: 20px 15px;
     text-align: center;
     transition: all 0.2s ease;
     background: #f7f7f7;
@@ -61,27 +70,29 @@
 }
 
 .tbp-dropzone-icon {
-    font-size: 40px;
-    width: 40px;
-    height: 40px;
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
     color: #646970;
 }
 
 .tbp-dropzone-text {
-    font-size: 14px;
+    font-size: 12px;
     color: #1d2327;
     font-weight: 500;
 }
 
 .tbp-dropzone-or {
-    font-size: 13px;
+    font-size: 11px;
     color: #646970;
-    margin: 4px 0;
+    margin: 2px 0;
 }
 
 .tbp-dropzone-browse {
     pointer-events: auto;
     margin-top: 4px;
+    font-size: 12px;
+    padding: 4px 10px;
 }
 
 .tbp-dropzone-browse:hover {
@@ -90,25 +101,38 @@
 }
 
 .tbp-dropzone-hint {
-    font-size: 12px;
+    font-size: 11px;
     color: #646970;
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
 /* Files list */
 .tbp-dropzone-files {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
 }
 
 .tbp-dropzone-files:empty {
     display: none;
 }
 
+/* Grid mode files */
+.tbp-dropzone-grid .tbp-dropzone-files {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+/* Default: horizontal file item layout */
 .tbp-dropzone-file {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
     border: 1px solid #dcdcde;
     border-radius: 4px;
     background: #fff;
@@ -116,11 +140,14 @@
 }
 
 .tbp-dropzone-file-preview {
-    aspect-ratio: 1;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f0f0f1;
+    border-radius: 4px;
     overflow: hidden;
 }
 
@@ -131,15 +158,42 @@
 }
 
 .tbp-dropzone-file-preview .dashicons {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
     color: #646970;
 }
 
 .tbp-dropzone-file-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Grid mode: vertical file cards */
+.tbp-dropzone-grid .tbp-dropzone-file {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+}
+
+.tbp-dropzone-grid .tbp-dropzone-file-preview {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 0;
+}
+
+.tbp-dropzone-grid .tbp-dropzone-file-preview .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+}
+
+.tbp-dropzone-grid .tbp-dropzone-file-info {
     padding: 8px 10px;
-    background: #fff;
     border-top: 1px solid #dcdcde;
 }
 
@@ -152,34 +206,95 @@
     text-overflow: ellipsis;
 }
 
+/* Editable title input */
+.tbp-dropzone-file-title {
+    display: block;
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    font-size: 12px;
+    color: #1d2327;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.tbp-dropzone-file-title::placeholder {
+    color: #646970;
+}
+
+.tbp-dropzone-file-title:hover {
+    border-color: #c3c4c7;
+    background: #f6f7f7;
+}
+
+.tbp-dropzone-file-title:focus {
+    border-color: #2271b1;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.tbp-dropzone-file-meta {
+    display: block;
+    font-size: 11px;
+    color: #646970;
+    margin-top: 2px;
+}
+
 .tbp-dropzone-file-remove {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 24px;
-    height: 24px;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border: none;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
+    border-radius: 4px;
+    background: transparent;
+    color: #646970;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.tbp-dropzone-file:hover .tbp-dropzone-file-remove {
-    opacity: 1;
-}
-
 .tbp-dropzone-file-remove:hover {
-    background: #d63638;
+    background: #fcf0f1;
+    color: #d63638;
 }
 
 .tbp-dropzone-file-remove .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Grid mode: overlay remove button */
+.tbp-dropzone-grid .tbp-dropzone-file-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    opacity: 0;
+}
+
+.tbp-dropzone-grid .tbp-dropzone-file:hover .tbp-dropzone-file-remove {
+    opacity: 1;
+}
+
+.tbp-dropzone-grid .tbp-dropzone-file-remove:hover {
+    background: #d63638;
+}
+
+.tbp-dropzone-grid .tbp-dropzone-file-remove .dashicons {
     font-size: 16px;
     width: 16px;
     height: 16px;
@@ -234,65 +349,15 @@
     font-size: 13px;
 }
 
-/* List view */
-.tbp-dropzone-list .tbp-dropzone-files {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+/* Responsive: stack on narrow containers */
+@media screen and (max-width: 500px) {
+    .tbp-dropzone-wrapper {
+        flex-direction: column;
+    }
 
-.tbp-dropzone-list .tbp-dropzone-file {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-preview {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    aspect-ratio: 1;
-    border-radius: 4px;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-preview .dashicons {
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-info {
-    flex: 1;
-    padding: 0;
-    border: none;
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-name {
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-meta {
-    font-size: 12px;
-    color: #646970;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-remove {
-    position: static;
-    opacity: 1;
-    background: transparent;
-    color: #646970;
-    width: 32px;
-    height: 32px;
-}
-
-.tbp-dropzone-list .tbp-dropzone-file-remove:hover {
-    background: #fcf0f1;
-    color: #d63638;
+    .tbp-dropzone-area {
+        flex: none;
+        width: 100%;
+        min-width: auto;
+    }
 }

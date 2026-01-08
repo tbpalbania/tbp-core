@@ -1,9 +1,9 @@
 <?php
 /**
- * @module-title: Subjects & Themes
+ * @module-title: Subjects & Topics
  * @module-version: 1.0.0
- * @module-description: LMS-like module with Subject and Theme post types. Many-to-many relationship with academic taxonomy integration.
- * @module-usage: Subject meta: _tbp_subject_code, _tbp_subject_credits, _tbp_subject_duration, tbp_academic_* (chain selector). Theme meta: _tbp_theme_duration, _tbp_theme_objectives, _tbp_theme_resources.
+ * @module-description: LMS-like module with Subject and Topic post types. Many-to-many relationship with academic taxonomy integration.
+ * @module-usage: Subject meta: _tbp_subject_code, _tbp_subject_credits, _tbp_subject_duration, tbp_academic_* (chain selector). Topic meta: _tbp_topic_duration, _tbp_topic_objectives, _tbp_topic_syllabus, _tbp_topic_resources.
  */
 
 if (!defined('ABSPATH')) {
@@ -17,13 +17,13 @@ define('TBP_SUBJECTS_URL', plugin_dir_url(__FILE__));
 require_once TBP_SUBJECTS_PATH . 'includes/class-post-types.php';
 require_once TBP_SUBJECTS_PATH . 'includes/class-pivot-table.php';
 require_once TBP_SUBJECTS_PATH . 'includes/class-subject-fields.php';
-require_once TBP_SUBJECTS_PATH . 'includes/class-theme-fields.php';
-require_once TBP_SUBJECTS_PATH . 'includes/class-themes-metabox.php';
+require_once TBP_SUBJECTS_PATH . 'includes/class-topic-fields.php';
+require_once TBP_SUBJECTS_PATH . 'includes/class-topics-metabox.php';
 
 /**
  * Initialize the module
  */
-class TBP_Subjects_Themes {
+class TBP_Subjects_Topics {
 
     private static $instance = null;
 
@@ -36,11 +36,11 @@ class TBP_Subjects_Themes {
 
     public function __construct() {
         // Initialize components
-        TBP_Subject_Theme_Post_Types::instance();
-        TBP_Subject_Theme_Pivot::instance();
+        TBP_Subject_Topic_Post_Types::instance();
+        TBP_Subject_Topic_Pivot::instance();
         TBP_Subject_Fields::instance();
-        TBP_Theme_Fields::instance();
-        TBP_Themes_Metabox::instance();
+        TBP_Topic_Fields::instance();
+        TBP_Topics_Metabox::instance();
 
         // Enqueue admin assets
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
@@ -49,7 +49,7 @@ class TBP_Subjects_Themes {
     public function enqueue_admin_assets($hook) {
         global $post_type;
 
-        if (!in_array($post_type, ['tbp_subject', 'tbp_theme'])) {
+        if (!in_array($post_type, ['tbp_subject', 'tbp_topic'])) {
             return;
         }
 
@@ -70,4 +70,4 @@ class TBP_Subjects_Themes {
     }
 }
 
-TBP_Subjects_Themes::instance();
+TBP_Subjects_Topics::instance();

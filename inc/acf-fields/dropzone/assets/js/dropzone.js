@@ -14,6 +14,7 @@
         events: {
             'click .tbp-dropzone-browse': 'onClickBrowse',
             'click .tbp-dropzone-file-remove': 'onClickRemove',
+            'input .tbp-dropzone-file-title': 'onTitleChange',
         },
 
         $wrapper: function() {
@@ -35,6 +36,7 @@
         initialize: function() {
             this.initDragDrop();
             this.initSortable();
+            // Don't call updateInput() here - PHP already pre-populates the hidden input
         },
 
         initDragDrop: function() {
@@ -86,6 +88,10 @@
             e.stopPropagation();
 
             $(e.currentTarget).closest('.tbp-dropzone-file').remove();
+            this.updateInput();
+        },
+
+        onTitleChange: function(e) {
             this.updateInput();
         },
 
@@ -242,13 +248,13 @@
                 var fileExt = attachment.filename.split('.').pop().toUpperCase();
                 var fileMeta = fileExt + (fileSize ? ' • ' + fileSize : '');
 
-                // Create file element
+                // Create file element with editable title
                 var $file = $('<div class="tbp-dropzone-file" data-id="' + attachment.id + '">' +
                     '<div class="tbp-dropzone-file-preview">' +
                     (thumbUrl ? '<img src="' + thumbUrl + '" alt="">' : '<span class="dashicons dashicons-media-default"></span>') +
                     '</div>' +
                     '<div class="tbp-dropzone-file-info">' +
-                    '<span class="tbp-dropzone-file-name">' + attachment.filename + '</span>' +
+                    '<input type="text" class="tbp-dropzone-file-title" value="" placeholder="' + attachment.filename + '" title="Click to edit title">' +
                     '<span class="tbp-dropzone-file-meta">' + fileMeta + '</span>' +
                     '</div>' +
                     '<button type="button" class="tbp-dropzone-file-remove" title="Remove">' +
@@ -264,13 +270,27 @@
         },
 
         updateInput: function() {
-            var ids = [];
+            var filesData = [];
 
             this.$files().find('.tbp-dropzone-file').each(function() {
-                ids.push($(this).data('id'));
+                var $file = $(this);
+                filesData.push({
+                    id: $file.data('id'),
+                    title: $file.find('.tbp-dropzone-file-title').val() || ''
+                });
             });
 
-            this.$input().val(ids.join(','));
+            // Update via ACF's val method for Gutenberg support
+            this.val(JSON.stringify(filesData));
+        },
+
+        // Override ACF's val method to get/set our value
+        val: function(value) {
+            if (typeof value !== 'undefined') {
+                this.$input().val(value).trigger('change');
+                return value;
+            }
+            return this.$input().val();
         },
 
         showError: function(message) {

@@ -30,7 +30,7 @@ class TBP_Subject_Fields {
     public function add_meta_boxes() {
         add_meta_box(
             'tbp_subject_details',
-            __('Subject Details', 'tbp-core'),
+            __('Subject Settings', 'tbp-core'),
             [$this, 'render_details_metabox'],
             'tbp_subject',
             'normal',
@@ -54,43 +54,47 @@ class TBP_Subject_Fields {
         $credits = get_post_meta($post->ID, '_tbp_subject_credits', true);
         $duration = get_post_meta($post->ID, '_tbp_subject_duration', true);
         ?>
-        <table class="form-table tbp-subject-fields">
-            <tr>
-                <th><label for="tbp_subject_code"><?php _e('Subject Code', 'tbp-core'); ?></label></th>
-                <td>
+        <div class="tbp-compact-fields">
+            <div class="tbp-field-row">
+                <div class="tbp-field tbp-field-half">
+                    <label for="tbp_subject_code">
+                        <?php _e('Subject Code', 'tbp-core'); ?>
+                        <span class="tbp-tooltip" data-tooltip="<?php esc_attr_e('Unique identifier for this subject (e.g., CS101, MATH201).', 'tbp-core'); ?>">?</span>
+                    </label>
                     <input type="text"
                            id="tbp_subject_code"
                            name="_tbp_subject_code"
                            value="<?php echo esc_attr($subject_code); ?>"
-                           class="regular-text"
                            placeholder="e.g., CS101">
-                </td>
-            </tr>
-            <tr>
-                <th><label for="tbp_subject_credits"><?php _e('Credits/ECTS', 'tbp-core'); ?></label></th>
-                <td>
+                </div>
+                <div class="tbp-field tbp-field-half">
+                    <label for="tbp_subject_credits">
+                        <?php _e('Credits/ECTS', 'tbp-core'); ?>
+                        <span class="tbp-tooltip" data-tooltip="<?php esc_attr_e('Number of credits or ECTS points for this subject.', 'tbp-core'); ?>">?</span>
+                    </label>
                     <input type="number"
                            id="tbp_subject_credits"
                            name="_tbp_subject_credits"
                            value="<?php echo esc_attr($credits); ?>"
-                           class="small-text"
                            min="0"
                            step="0.5">
-                </td>
-            </tr>
-            <tr>
-                <th><label for="tbp_subject_duration"><?php _e('Total Duration (hours)', 'tbp-core'); ?></label></th>
-                <td>
+                </div>
+            </div>
+            <div class="tbp-field-row">
+                <div class="tbp-field tbp-field-half">
+                    <label for="tbp_subject_duration">
+                        <?php _e('Total Duration (hours)', 'tbp-core'); ?>
+                        <span class="tbp-tooltip" data-tooltip="<?php esc_attr_e('Total teaching hours for this subject.', 'tbp-core'); ?>">?</span>
+                    </label>
                     <input type="number"
                            id="tbp_subject_duration"
                            name="_tbp_subject_duration"
                            value="<?php echo esc_attr($duration); ?>"
-                           class="small-text"
                            min="0"
                            step="0.5">
-                </td>
-            </tr>
-        </table>
+                </div>
+            </div>
+        </div>
         <?php
     }
 
@@ -103,9 +107,6 @@ class TBP_Subject_Fields {
 
         $values = TBP_Chain_Selector::get_post_meta($post->ID);
         TBP_Chain_Selector::render([], $values, 'post');
-        ?>
-        <p class="description"><?php _e('Assign this subject to a specific academic path.', 'tbp-core'); ?></p>
-        <?php
     }
 
     public function save_meta($post_id, $post) {
@@ -148,7 +149,7 @@ class TBP_Subject_Fields {
             if ($key === 'title') {
                 $new_columns['subject_code'] = __('Code', 'tbp-core');
                 $new_columns['credits'] = __('Credits', 'tbp-core');
-                $new_columns['themes_count'] = __('Themes', 'tbp-core');
+                $new_columns['topics_count'] = __('Topics', 'tbp-core');
             }
         }
 
@@ -166,8 +167,8 @@ class TBP_Subject_Fields {
                 echo $credits ? esc_html($credits) : '—';
                 break;
 
-            case 'themes_count':
-                $count = TBP_Subject_Theme_Pivot::get_theme_count($post_id);
+            case 'topics_count':
+                $count = TBP_Subject_Topic_Pivot::get_topic_count($post_id);
                 echo esc_html($count);
                 break;
         }

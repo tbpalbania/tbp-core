@@ -55,7 +55,14 @@ class TBP_Academic_Taxonomies {
         add_action('tbp_profile_add_form_fields', [$this, 'add_profile_fields']);
         add_action('tbp_profile_edit_form_fields', [$this, 'edit_profile_fields'], 10, 2);
 
-        // Save term meta
+        // Auto-generate unique slugs for terms with same names
+        add_action('admin_footer-edit-tags.php', [$this, 'add_slug_generation_script']);
+        add_action('admin_footer-term.php', [$this, 'add_slug_generation_script']);
+
+        // Allow duplicate term names by appending parent info
+        add_filter('pre_insert_term', [$this, 'allow_duplicate_term_names'], 10, 2);
+
+        // Save term meta (also handles parent relationships)
         add_action('created_tbp_faculty', [$this, 'save_faculty_icon']);
         add_action('edited_tbp_faculty', [$this, 'save_faculty_icon']);
         add_action('created_tbp_department', [$this, 'save_department_meta']);
@@ -112,7 +119,145 @@ class TBP_Academic_Taxonomies {
     }
 
     /**
+     * Add JavaScript to auto-generate unique slugs based on parent selection
+     * This allows terms with the same name but different parents to coexist
+     */
+    public function add_slug_generation_script() {
+        $screen = get_current_screen();
+        $our_taxonomies = ['tbp_faculty', 'tbp_department', 'tbp_cycle', 'tbp_profile'];
+
+        if (!$screen || !in_array($screen->taxonomy, $our_taxonomies)) {
+            return;
+        }
+
+        $parent_fields = [
+            'tbp_department' => 'parent_faculty',
+            'tbp_cycle' => 'parent_department',
+            'tbp_profile' => 'parent_cycle',
+        ];
+
+        $parent_field = isset($parent_fields[$screen->taxonomy]) ? $parent_fields[$screen->taxonomy] : '';
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
+            var parentField = '<?php echo esc_js($parent_field); ?>';
+
+            function updateSlugWithParent() {
+                var $nameField = $('#tag-name, #name');
+                var $slugField = $('#tag-slug, #slug');
+                var $parentField = parentField ? $('#' + parentField) : null;
+
+                if (!$nameField.length || !$slugField.length) return;
+
+                var name = $nameField.val();
+                var parentId = $parentField ? $parentField.val() : '';
+
+                if (name) {
+                    // Generate base slug from name
+                    var slug = name.toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim();
+
+                    // Append parent ID if selected to ensure uniqueness
+                    if (parentId) {
+                        slug = slug + '-p' + parentId;
+                    }
+
+                    $slugField.val(slug);
+                }
+            }
+
+            // Update slug when name or parent changes (only on add form)
+            if ($('#tag-name').length) {
+                $('#tag-name').on('blur', updateSlugWithParent);
+                if (parentField) {
+                    $('#' + parentField).on('change', updateSlugWithParent);
+                }
+            }
+        });
+        </script>
+        <?php
+    }
+
+    /**
+     * Allow duplicate term names by appending parent term info
+     * This runs before WordPress's term_exists check
+     */
+    public function allow_duplicate_term_names($term, $taxonomy) {
+        $our_taxonomies = ['tbp_faculty', 'tbp_department', 'tbp_cycle', 'tbp_profile'];
+
+        if (!in_array($taxonomy, $our_taxonomies)) {
+            return $term;
+        }
+
+        // Check if term with this name already exists
+        $existing = term_exists($term, $taxonomy);
+
+        if (!$existing) {
+            return $term;
+        }
+
+        // Get parent info from POST to create unique identifier
+        $parent_name = '';
+        switch ($taxonomy) {
+            case 'tbp_department':
+                if (isset($_POST['parent_faculty']) && $_POST['parent_faculty']) {
+                    $parent_term = get_term(absint($_POST['parent_faculty']), 'tbp_faculty');
+                    if ($parent_term && !is_wp_error($parent_term)) {
+                        $parent_name = $parent_term->name;
+                    }
+                }
+                break;
+            case 'tbp_cycle':
+                if (isset($_POST['parent_department']) && $_POST['parent_department']) {
+                    $parent_term = get_term(absint($_POST['parent_department']), 'tbp_department');
+                    if ($parent_term && !is_wp_error($parent_term)) {
+                        $parent_name = $parent_term->name;
+                    }
+                }
+                break;
+            case 'tbp_profile':
+                if (isset($_POST['parent_cycle']) && $_POST['parent_cycle']) {
+                    $parent_term = get_term(absint($_POST['parent_cycle']), 'tbp_cycle');
+                    if ($parent_term && !is_wp_error($parent_term)) {
+                        $parent_name = $parent_term->name;
+                    }
+                }
+                break;
+        }
+
+        // Append parent name to make the term name unique
+        if ($parent_name) {
+            $new_term = $term . ' (' . $parent_name . ')';
+            // Check if this modified name also exists
+            if (term_exists($new_term, $taxonomy)) {
+                // Add counter to parent suffix
+                $counter = 2;
+                while (term_exists($new_term . ' ' . $counter, $taxonomy)) {
+                    $counter++;
+                }
+                $new_term = $new_term . ' ' . $counter;
+            }
+            $term = $new_term;
+        } else {
+            // Fallback: append counter
+            $counter = 2;
+            $new_term = $term . ' (' . $counter . ')';
+            while (term_exists($new_term, $taxonomy)) {
+                $counter++;
+                $new_term = $term . ' (' . $counter . ')';
+            }
+            $term = $new_term;
+        }
+
+        return $term;
+    }
+
+    /**
      * Register all taxonomies
+     * Note: Taxonomies are hierarchical to allow duplicate names with different parents
      */
     public function register_taxonomies() {
         foreach (self::$taxonomies as $taxonomy => $config) {
@@ -126,11 +271,13 @@ class TBP_Academic_Taxonomies {
                 'add_new_item' => 'Add New ' . $config['singular'],
                 'new_item_name' => 'New ' . $config['singular'] . ' Name',
                 'menu_name' => $config['plural'],
+                'parent_item' => 'Parent ' . $config['singular'],
+                'parent_item_colon' => 'Parent ' . $config['singular'] . ':',
             ];
 
             $args = [
                 'labels' => $labels,
-                'hierarchical' => false,
+                'hierarchical' => true, // Allows duplicate names with different parents
                 'public' => true,
                 'show_ui' => true,
                 'show_admin_column' => false,
