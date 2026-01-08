@@ -87,14 +87,6 @@ class TBP_Subject_Theme_Post_Types {
         ];
 
         register_post_type('tbp_theme', $theme_args);
-
-        // Register academic taxonomies for these post types
-        if (taxonomy_exists('tbp_faculty')) {
-            register_taxonomy_for_object_type('tbp_faculty', 'tbp_subject');
-            register_taxonomy_for_object_type('tbp_department', 'tbp_subject');
-            register_taxonomy_for_object_type('tbp_cycle', 'tbp_subject');
-            register_taxonomy_for_object_type('tbp_profile', 'tbp_subject');
-        }
     }
 
     public function add_admin_menus() {
