@@ -15,10 +15,14 @@ define('TBP_ACF_DROPZONE_PATH', plugin_dir_path(__FILE__));
 define('TBP_ACF_DROPZONE_URL', plugin_dir_url(__FILE__));
 define('TBP_ACF_DROPZONE_VERSION', '1.0.3');
 
-/**
- * ACF Dropzone Field Type
- */
-class TBP_ACF_Field_Dropzone extends acf_field {
+// Register field when ACF is ready
+add_action('acf/include_field_types', 'tbp_acf_register_dropzone_field');
+
+function tbp_acf_register_dropzone_field() {
+    /**
+     * ACF Dropzone Field Type
+     */
+    class TBP_ACF_Field_Dropzone extends acf_field {
 
     public function __construct() {
         $this->name = 'tbp_dropzone';
@@ -393,13 +397,9 @@ class TBP_ACF_Field_Dropzone extends acf_field {
     }
 }
 
-// Initialize field
-function tbp_acf_register_dropzone_field() {
-    if (function_exists('acf_register_field_type')) {
-        acf_register_field_type(new TBP_ACF_Field_Dropzone());
-    }
+    // Register the field type
+    acf_register_field_type(new TBP_ACF_Field_Dropzone());
 }
-add_action('acf/include_field_types', 'tbp_acf_register_dropzone_field');
 
 // AJAX handler for file uploads
 function tbp_acf_dropzone_upload() {
