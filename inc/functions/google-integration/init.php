@@ -37,6 +37,11 @@ class TBP_Google_Integration {
     }
 
     public function __construct() {
+        // Debug: register test action from constructor
+        add_action('wp_ajax_tbp_google_constructor_test', function() {
+            wp_send_json_success(['message' => 'Constructor ran!']);
+        });
+
         $this->settings = $this->get_settings();
 
         // Admin settings
