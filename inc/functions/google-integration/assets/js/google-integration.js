@@ -55,37 +55,42 @@
             var self = this;
 
             return new Promise(function(resolve, reject) {
-                // Get custom token from WordPress
-                fetch(tbpGoogle.restUrl + 'firebase-token', {
-                    method: 'GET',
-                    credentials: 'same-origin',
-                    headers: {
-                        'X-WP-Nonce': tbpGoogle.restNonce,
+                // Get custom token from WordPress via AJAX (more reliable than REST)
+                jQuery.ajax({
+                    url: tbpGoogle.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'tbp_firebase_custom_token',
+                        nonce: tbpGoogle.nonce,
                     },
-                })
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data.token) {
-                        return self.auth.signInWithCustomToken(data.token);
+                    success: function(response) {
+                        if (response.success && response.data.token) {
+                            self.auth.signInWithCustomToken(response.data.token)
+                                .then(function(userCredential) {
+                                    self.currentUser = userCredential.user;
+                                    console.log('TBPFirebase: Authenticated as', self.currentUser.uid);
+
+                                    // Run ready callbacks
+                                    self.onReadyCallbacks.forEach(function(cb) {
+                                        cb(self);
+                                    });
+
+                                    resolve(self.currentUser);
+                                })
+                                .catch(function(error) {
+                                    console.error('TBPFirebase: Firebase auth error', error);
+                                    reject(error);
+                                });
+                        } else {
+                            var msg = response.data ? response.data.message : 'No token received';
+                            console.error('TBPFirebase: Token error', msg);
+                            reject(new Error(msg));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('TBPFirebase: AJAX error', error);
+                        reject(new Error('Request failed: ' + error));
                     }
-                    throw new Error('No token received');
-                })
-                .then(function(userCredential) {
-                    self.currentUser = userCredential.user;
-                    console.log('TBPFirebase: Authenticated as', self.currentUser.uid);
-
-                    // Run ready callbacks
-                    self.onReadyCallbacks.forEach(function(cb) {
-                        cb(self);
-                    });
-
-                    resolve(self.currentUser);
-                })
-                .catch(function(error) {
-                    console.error('TBPFirebase: Auth error', error);
-                    reject(error);
                 });
             });
         },
