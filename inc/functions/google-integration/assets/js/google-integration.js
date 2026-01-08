@@ -88,8 +88,15 @@
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('TBPFirebase: AJAX error', error);
-                        reject(new Error('Request failed: ' + error));
+                        var responseMsg = '';
+                        try {
+                            var resp = JSON.parse(xhr.responseText);
+                            responseMsg = resp.data ? resp.data.message : xhr.responseText;
+                        } catch(e) {
+                            responseMsg = xhr.responseText || error;
+                        }
+                        console.error('TBPFirebase: AJAX error', responseMsg);
+                        reject(new Error('Request failed: ' + responseMsg));
                     }
                 });
             });
