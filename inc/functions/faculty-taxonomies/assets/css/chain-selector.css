@@ -1,0 +1,47 @@
+.tbp-chain-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.tbp-chain-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+.tbp-chain-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.tbp-chain-field select {
+    width: 100%;
+    min-width: 200px;
+    padding: 8px;
+}
+
+.tbp-chain-field select:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Admin styles */
+.form-table .tbp-chain-selector {
+    max-width: 100%;
+}
+
+.form-table .tbp-chain-field {
+    margin-bottom: 10px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .tbp-chain-selector {
+        flex-direction: column;
+    }
+
+    .tbp-chain-field {
+        width: 100%;
+    }
+}
