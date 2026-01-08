@@ -110,37 +110,52 @@ class TBP_Academic_Taxonomies {
     }
 
     /**
-     * Add taxonomy menus under TBP Core
+     * Add Academic menu and taxonomy submenus
      */
     public function add_taxonomy_menus() {
+        // Create Academic parent menu
+        add_menu_page(
+            __('Academic', 'tbp-core'),
+            __('Academic', 'tbp-core'),
+            'manage_options',
+            'tbp-academic',
+            '__return_null',
+            'dashicons-welcome-learn-more',
+            58
+        );
+
+        // Add taxonomy submenus
         add_submenu_page(
-            'tbp-core',
+            'tbp-academic',
             'Faculties',
             'Faculties',
             'manage_options',
             'edit-tags.php?taxonomy=tbp_faculty'
         );
         add_submenu_page(
-            'tbp-core',
+            'tbp-academic',
             'Departments',
             'Departments',
             'manage_options',
             'edit-tags.php?taxonomy=tbp_department'
         );
         add_submenu_page(
-            'tbp-core',
+            'tbp-academic',
             'Cycles',
             'Cycles',
             'manage_options',
             'edit-tags.php?taxonomy=tbp_cycle'
         );
         add_submenu_page(
-            'tbp-core',
+            'tbp-academic',
             'Profiles',
             'Profiles',
             'manage_options',
             'edit-tags.php?taxonomy=tbp_profile'
         );
+
+        // Remove the auto-generated first submenu that duplicates parent
+        remove_submenu_page('tbp-academic', 'tbp-academic');
     }
 
     /**
