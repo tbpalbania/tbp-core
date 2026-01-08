@@ -56,6 +56,8 @@ class TBP_Academic_Taxonomies {
         add_action('tbp_profile_edit_form_fields', [$this, 'edit_profile_fields'], 10, 2);
 
         // Save term meta
+        add_action('created_tbp_faculty', [$this, 'save_faculty_icon']);
+        add_action('edited_tbp_faculty', [$this, 'save_faculty_icon']);
         add_action('created_tbp_department', [$this, 'save_department_meta']);
         add_action('edited_tbp_department', [$this, 'save_department_meta']);
         add_action('created_tbp_cycle', [$this, 'save_cycle_meta']);
@@ -70,6 +72,43 @@ class TBP_Academic_Taxonomies {
         add_filter('manage_tbp_cycle_custom_column', [$this, 'render_parent_column'], 10, 3);
         add_filter('manage_edit-tbp_profile_columns', [$this, 'add_parent_column']);
         add_filter('manage_tbp_profile_custom_column', [$this, 'render_parent_column'], 10, 3);
+
+        // Add icon column to faculty
+        add_filter('manage_edit-tbp_faculty_columns', [$this, 'add_faculty_icon_column']);
+        add_filter('manage_tbp_faculty_custom_column', [$this, 'render_faculty_icon_column'], 10, 3);
+    }
+
+    /**
+     * Add icon column to faculty list
+     */
+    public function add_faculty_icon_column($columns) {
+        $new_columns = [];
+        foreach ($columns as $key => $value) {
+            if ($key === 'name') {
+                $new_columns['icon'] = __('Icon', 'tbp-core');
+            }
+            $new_columns[$key] = $value;
+        }
+        return $new_columns;
+    }
+
+    /**
+     * Render icon column
+     */
+    public function render_faculty_icon_column($content, $column_name, $term_id) {
+        if ($column_name !== 'icon') {
+            return $content;
+        }
+
+        $icon_id = get_term_meta($term_id, 'faculty_icon', true);
+        if ($icon_id) {
+            $icon_url = wp_get_attachment_image_url($icon_id, 'thumbnail');
+            if ($icon_url) {
+                return '<img src="' . esc_url($icon_url) . '" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">';
+            }
+        }
+
+        return '<span style="display:inline-block;width:40px;height:40px;background:#f0f0f1;border-radius:4px;"></span>';
     }
 
     /**
@@ -318,14 +357,112 @@ class TBP_Academic_Taxonomies {
     }
 
     /**
-     * Empty fields for faculty (no parent needed)
+     * Faculty icon field - Add form
      */
     public function add_faculty_fields() {
-        // Faculty has no parent
+        wp_enqueue_media();
+        ?>
+        <div class="form-field">
+            <label for="faculty_icon"><?php _e('Faculty Icon', 'tbp-core'); ?></label>
+            <div class="tbp-faculty-icon-field">
+                <input type="hidden" name="faculty_icon" id="faculty_icon" value="">
+                <div class="tbp-faculty-icon-preview"></div>
+                <button type="button" class="button tbp-faculty-icon-upload"><?php _e('Select Icon', 'tbp-core'); ?></button>
+                <button type="button" class="button tbp-faculty-icon-remove" style="display:none;"><?php _e('Remove', 'tbp-core'); ?></button>
+            </div>
+            <p><?php _e('Upload an icon/logo for this faculty.', 'tbp-core'); ?></p>
+        </div>
+        <?php
+        $this->faculty_icon_script();
     }
 
+    /**
+     * Faculty icon field - Edit form
+     */
     public function edit_faculty_fields($term, $taxonomy) {
-        // Faculty has no parent
+        wp_enqueue_media();
+        $icon_id = get_term_meta($term->term_id, 'faculty_icon', true);
+        $icon_url = $icon_id ? wp_get_attachment_image_url($icon_id, 'thumbnail') : '';
+        ?>
+        <tr class="form-field">
+            <th scope="row"><label for="faculty_icon"><?php _e('Faculty Icon', 'tbp-core'); ?></label></th>
+            <td>
+                <div class="tbp-faculty-icon-field">
+                    <input type="hidden" name="faculty_icon" id="faculty_icon" value="<?php echo esc_attr($icon_id); ?>">
+                    <div class="tbp-faculty-icon-preview">
+                        <?php if ($icon_url) : ?>
+                            <img src="<?php echo esc_url($icon_url); ?>" alt="">
+                        <?php endif; ?>
+                    </div>
+                    <button type="button" class="button tbp-faculty-icon-upload"><?php _e('Select Icon', 'tbp-core'); ?></button>
+                    <button type="button" class="button tbp-faculty-icon-remove" <?php echo $icon_id ? '' : 'style="display:none;"'; ?>><?php _e('Remove', 'tbp-core'); ?></button>
+                </div>
+                <p class="description"><?php _e('Upload an icon/logo for this faculty.', 'tbp-core'); ?></p>
+            </td>
+        </tr>
+        <?php
+        $this->faculty_icon_script();
+    }
+
+    /**
+     * Save faculty icon
+     */
+    public function save_faculty_icon($term_id) {
+        if (isset($_POST['faculty_icon'])) {
+            update_term_meta($term_id, 'faculty_icon', absint($_POST['faculty_icon']));
+        }
+    }
+
+    /**
+     * Faculty icon upload script
+     */
+    private function faculty_icon_script() {
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
+            var frame;
+
+            $('.tbp-faculty-icon-upload').on('click', function(e) {
+                e.preventDefault();
+
+                if (frame) {
+                    frame.open();
+                    return;
+                }
+
+                frame = wp.media({
+                    title: '<?php _e('Select Faculty Icon', 'tbp-core'); ?>',
+                    button: { text: '<?php _e('Use this icon', 'tbp-core'); ?>' },
+                    multiple: false,
+                    library: { type: 'image' }
+                });
+
+                frame.on('select', function() {
+                    var attachment = frame.state().get('selection').first().toJSON();
+                    var url = attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
+
+                    $('#faculty_icon').val(attachment.id);
+                    $('.tbp-faculty-icon-preview').html('<img src="' + url + '" alt="">');
+                    $('.tbp-faculty-icon-remove').show();
+                });
+
+                frame.open();
+            });
+
+            $('.tbp-faculty-icon-remove').on('click', function(e) {
+                e.preventDefault();
+                $('#faculty_icon').val('');
+                $('.tbp-faculty-icon-preview').html('');
+                $(this).hide();
+            });
+        });
+        </script>
+        <style>
+            .tbp-faculty-icon-field { display: flex; align-items: center; gap: 10px; }
+            .tbp-faculty-icon-preview { width: 60px; height: 60px; background: #f0f0f1; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+            .tbp-faculty-icon-preview img { max-width: 100%; max-height: 100%; border-radius: 4px; }
+        </style>
+        <?php
     }
 
     /**
