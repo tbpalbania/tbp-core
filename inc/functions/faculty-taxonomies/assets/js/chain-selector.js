@@ -5,7 +5,65 @@
         initChainSelectors();
     });
 
+    // Custom template for Select2 options with icons
+    function formatOption(option) {
+        if (!option.id) {
+            return option.text;
+        }
+
+        var $option = $(option.element);
+        var icon = $option.data('icon') || option.icon;
+
+        if (icon) {
+            return $('<span class="tbp-select2-option"><img src="' + icon + '" class="tbp-select2-icon" /><span>' + option.text + '</span></span>');
+        }
+
+        return option.text;
+    }
+
+    // Custom template for selected option
+    function formatSelection(option) {
+        if (!option.id) {
+            return option.text;
+        }
+
+        var $option = $(option.element);
+        var icon = $option.data('icon') || option.icon;
+
+        if (icon) {
+            return $('<span class="tbp-select2-selection"><img src="' + icon + '" class="tbp-select2-icon" /><span>' + option.text + '</span></span>');
+        }
+
+        return option.text;
+    }
+
     function initChainSelectors() {
+        // Initialize all Select2 fields
+        $('.tbp-select2').each(function() {
+            var $select = $(this);
+
+            if ($select.hasClass('select2-hidden-accessible')) {
+                return; // Already initialized
+            }
+
+            $select.select2({
+                placeholder: $select.data('placeholder') || '',
+                allowClear: true,
+                width: '100%',
+                templateResult: formatOption,
+                templateSelection: formatSelection,
+                language: {
+                    noResults: function() {
+                        return tbpChainSelector.i18n.no_results;
+                    },
+                    searching: function() {
+                        return tbpChainSelector.i18n.searching;
+                    }
+                }
+            });
+        });
+
+        // Handle chain selection change
         $(document).on('change', '.tbp-chain-select', function() {
             var $select = $(this);
             var parentId = $select.val();
@@ -33,6 +91,13 @@
             // Show loading state
             $child.prop('disabled', true);
 
+            // Get parent icon for departments
+            var parentIcon = '';
+            if (childTaxonomy === 'tbp_department') {
+                var $selectedOption = $select.find('option:selected');
+                parentIcon = $selectedOption.data('icon') || '';
+            }
+
             $.ajax({
                 url: tbpChainSelector.ajax_url,
                 type: 'POST',
@@ -45,7 +110,7 @@
                 },
                 success: function(response) {
                     if (response.success && response.data) {
-                        populateSelect($child, response.data);
+                        populateSelect($child, response.data, parentIcon);
                     }
                 },
                 error: function() {
@@ -59,11 +124,31 @@
     }
 
     function clearChildSelects($select) {
-        // Get the default option text from the first option
-        var defaultText = $select.find('option:first').text();
+        // Destroy Select2 first
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
 
-        // Clear and reset to default
-        $select.html('<option value="">' + defaultText + '</option>');
+        // Clear options except placeholder
+        $select.find('option:not(:first)').remove();
+        $select.val('');
+
+        // Reinitialize Select2
+        $select.select2({
+            placeholder: $select.data('placeholder') || '',
+            allowClear: true,
+            width: '100%',
+            templateResult: formatOption,
+            templateSelection: formatSelection,
+            language: {
+                noResults: function() {
+                    return tbpChainSelector.i18n.no_results;
+                },
+                searching: function() {
+                    return tbpChainSelector.i18n.searching;
+                }
+            }
+        });
 
         // Find and clear the next child in chain
         var nextChildId = $select.data('child');
@@ -75,15 +160,47 @@
         }
     }
 
-    function populateSelect($select, options) {
-        var defaultText = $select.find('option:first').text();
-        var html = '<option value="">' + defaultText + '</option>';
+    function populateSelect($select, options, parentIcon) {
+        // Destroy Select2 first
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
 
+        // Clear existing options except first
+        $select.find('option:not(:first)').remove();
+
+        // Add new options
         $.each(options, function(index, option) {
-            html += '<option value="' + option.id + '">' + option.name + '</option>';
+            var $option = $('<option></option>')
+                .attr('value', option.id)
+                .text(option.text);
+
+            // Add icon data attribute
+            if (option.icon) {
+                $option.attr('data-icon', option.icon);
+            } else if (parentIcon) {
+                $option.attr('data-icon', parentIcon);
+            }
+
+            $select.append($option);
         });
 
-        $select.html(html);
+        // Reinitialize Select2
+        $select.select2({
+            placeholder: $select.data('placeholder') || '',
+            allowClear: true,
+            width: '100%',
+            templateResult: formatOption,
+            templateSelection: formatSelection,
+            language: {
+                noResults: function() {
+                    return tbpChainSelector.i18n.no_results;
+                },
+                searching: function() {
+                    return tbpChainSelector.i18n.searching;
+                }
+            }
+        });
     }
 
 })(jQuery);

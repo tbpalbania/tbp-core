@@ -1,7 +1,7 @@
 <?php
 /**
  * Chain Selector Component
- * Reusable component for hierarchical taxonomy selection
+ * Reusable component for hierarchical taxonomy selection with Select2
  */
 
 if (!defined('ABSPATH')) {
@@ -30,10 +30,26 @@ class TBP_Chain_Selector {
      * Enqueue scripts and styles
      */
     public function enqueue_scripts() {
+        // Register Select2
+        wp_register_style(
+            'select2',
+            'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
+            [],
+            '4.1.0'
+        );
+
+        wp_register_script(
+            'select2',
+            'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+            ['jquery'],
+            '4.1.0',
+            true
+        );
+
         wp_register_script(
             'tbp-chain-selector',
             TBP_FACULTY_TAX_URL . 'assets/js/chain-selector.js',
-            ['jquery'],
+            ['jquery', 'select2'],
             TBP_CORE_VERSION,
             true
         );
@@ -41,13 +57,21 @@ class TBP_Chain_Selector {
         wp_register_style(
             'tbp-chain-selector',
             TBP_FACULTY_TAX_URL . 'assets/css/chain-selector.css',
-            [],
+            ['select2'],
             TBP_CORE_VERSION
         );
 
         wp_localize_script('tbp-chain-selector', 'tbpChainSelector', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('tbp_chain_selector'),
+            'i18n' => [
+                'select_faculty' => __('Select Faculty', 'tbp-core'),
+                'select_department' => __('Select Department', 'tbp-core'),
+                'select_cycle' => __('Select Cycle', 'tbp-core'),
+                'select_profile' => __('Select Profile', 'tbp-core'),
+                'searching' => __('Searching...', 'tbp-core'),
+                'no_results' => __('No results found', 'tbp-core'),
+            ],
         ]);
     }
 
@@ -83,13 +107,34 @@ class TBP_Chain_Selector {
 
         $options = [];
         foreach ($terms as $term) {
-            $options[] = [
+            $option = [
                 'id' => $term->term_id,
-                'name' => $term->name,
+                'text' => $term->name,
             ];
+
+            // Add icon for departments (inherit from parent faculty)
+            if ($child_taxonomy === 'tbp_department') {
+                $faculty_icon = get_term_meta($parent_id, 'faculty_icon', true);
+                if ($faculty_icon) {
+                    $option['icon'] = wp_get_attachment_image_url($faculty_icon, 'thumbnail');
+                }
+            }
+
+            $options[] = $option;
         }
 
         wp_send_json_success($options);
+    }
+
+    /**
+     * Get faculty icon URL
+     */
+    private static function get_faculty_icon($term_id) {
+        $icon_id = get_term_meta($term_id, 'faculty_icon', true);
+        if ($icon_id) {
+            return wp_get_attachment_image_url($icon_id, 'thumbnail');
+        }
+        return '';
     }
 
     /**
@@ -101,6 +146,8 @@ class TBP_Chain_Selector {
      * @param string $field_prefix Prefix for field names
      */
     public static function render($args = [], $values = [], $context = 'user', $field_prefix = 'tbp_academic') {
+        wp_enqueue_script('select2');
+        wp_enqueue_style('select2');
         wp_enqueue_script('tbp-chain-selector');
         wp_enqueue_style('tbp-chain-selector');
 
@@ -122,7 +169,7 @@ class TBP_Chain_Selector {
         $cycle_id = isset($values['cycle']) ? absint($values['cycle']) : 0;
         $profile_id = isset($values['profile']) ? absint($values['profile']) : 0;
 
-        // Get all faculties
+        // Get all faculties with icons
         $faculties = get_terms([
             'taxonomy' => 'tbp_faculty',
             'hide_empty' => false,
@@ -144,14 +191,19 @@ class TBP_Chain_Selector {
                 <label for="<?php echo esc_attr($field_prefix); ?>_faculty"><?php _e('Faculty', 'tbp-core'); ?></label>
                 <select name="<?php echo esc_attr($field_prefix); ?>_faculty"
                         id="<?php echo esc_attr($field_prefix); ?>_faculty"
-                        class="tbp-chain-select"
+                        class="tbp-chain-select tbp-select2"
                         data-child="<?php echo esc_attr($field_prefix); ?>_department"
                         data-child-taxonomy="tbp_department"
                         data-parent-meta-key="parent_faculty"
+                        data-placeholder="<?php esc_attr_e('Select Faculty', 'tbp-core'); ?>"
                         <?php echo $required; ?>>
-                    <option value=""><?php _e('— Select Faculty —', 'tbp-core'); ?></option>
-                    <?php foreach ($faculties as $faculty) : ?>
-                        <option value="<?php echo esc_attr($faculty->term_id); ?>" <?php selected($faculty_id, $faculty->term_id); ?>>
+                    <option value=""></option>
+                    <?php foreach ($faculties as $faculty) :
+                        $icon_url = self::get_faculty_icon($faculty->term_id);
+                    ?>
+                        <option value="<?php echo esc_attr($faculty->term_id); ?>"
+                                data-icon="<?php echo esc_attr($icon_url); ?>"
+                                <?php selected($faculty_id, $faculty->term_id); ?>>
                             <?php echo esc_html($faculty->name); ?>
                         </option>
                     <?php endforeach; ?>
@@ -164,14 +216,19 @@ class TBP_Chain_Selector {
                 <label for="<?php echo esc_attr($field_prefix); ?>_department"><?php _e('Department', 'tbp-core'); ?></label>
                 <select name="<?php echo esc_attr($field_prefix); ?>_department"
                         id="<?php echo esc_attr($field_prefix); ?>_department"
-                        class="tbp-chain-select"
+                        class="tbp-chain-select tbp-select2"
                         data-child="<?php echo esc_attr($field_prefix); ?>_cycle"
                         data-child-taxonomy="tbp_cycle"
                         data-parent-meta-key="parent_department"
+                        data-placeholder="<?php esc_attr_e('Select Department', 'tbp-core'); ?>"
                         <?php echo $required; ?>>
-                    <option value=""><?php _e('— Select Department —', 'tbp-core'); ?></option>
-                    <?php foreach ($departments as $department) : ?>
-                        <option value="<?php echo esc_attr($department->term_id); ?>" <?php selected($department_id, $department->term_id); ?>>
+                    <option value=""></option>
+                    <?php foreach ($departments as $department) :
+                        $icon_url = $faculty_id ? self::get_faculty_icon($faculty_id) : '';
+                    ?>
+                        <option value="<?php echo esc_attr($department->term_id); ?>"
+                                data-icon="<?php echo esc_attr($icon_url); ?>"
+                                <?php selected($department_id, $department->term_id); ?>>
                             <?php echo esc_html($department->name); ?>
                         </option>
                     <?php endforeach; ?>
@@ -184,12 +241,13 @@ class TBP_Chain_Selector {
                 <label for="<?php echo esc_attr($field_prefix); ?>_cycle"><?php _e('Cycle', 'tbp-core'); ?></label>
                 <select name="<?php echo esc_attr($field_prefix); ?>_cycle"
                         id="<?php echo esc_attr($field_prefix); ?>_cycle"
-                        class="tbp-chain-select"
+                        class="tbp-chain-select tbp-select2"
                         data-child="<?php echo esc_attr($field_prefix); ?>_profile"
                         data-child-taxonomy="tbp_profile"
                         data-parent-meta-key="parent_cycle"
+                        data-placeholder="<?php esc_attr_e('Select Cycle', 'tbp-core'); ?>"
                         <?php echo $required; ?>>
-                    <option value=""><?php _e('— Select Cycle —', 'tbp-core'); ?></option>
+                    <option value=""></option>
                     <?php foreach ($cycles as $cycle) : ?>
                         <option value="<?php echo esc_attr($cycle->term_id); ?>" <?php selected($cycle_id, $cycle->term_id); ?>>
                             <?php echo esc_html($cycle->name); ?>
@@ -204,9 +262,10 @@ class TBP_Chain_Selector {
                 <label for="<?php echo esc_attr($field_prefix); ?>_profile"><?php _e('Profile', 'tbp-core'); ?></label>
                 <select name="<?php echo esc_attr($field_prefix); ?>_profile"
                         id="<?php echo esc_attr($field_prefix); ?>_profile"
-                        class="tbp-chain-select"
+                        class="tbp-chain-select tbp-select2"
+                        data-placeholder="<?php esc_attr_e('Select Profile', 'tbp-core'); ?>"
                         <?php echo $required; ?>>
-                    <option value=""><?php _e('— Select Profile —', 'tbp-core'); ?></option>
+                    <option value=""></option>
                     <?php foreach ($profiles as $profile) : ?>
                         <option value="<?php echo esc_attr($profile->term_id); ?>" <?php selected($profile_id, $profile->term_id); ?>>
                             <?php echo esc_html($profile->name); ?>
