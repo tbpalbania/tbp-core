@@ -28,6 +28,14 @@ class TBP_Firebase_Messaging {
     }
 
     public function __construct() {
+        // Defer initialization to allow all modules to load first
+        add_action('init', [$this, 'init'], 20);
+    }
+
+    /**
+     * Initialize after all modules are loaded
+     */
+    public function init() {
         // Check dependency
         if (!$this->check_dependencies()) {
             add_action('admin_notices', [$this, 'dependency_notice']);
