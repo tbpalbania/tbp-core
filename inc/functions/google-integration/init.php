@@ -432,9 +432,12 @@ class TBP_Google_Integration {
             return new WP_Error('not_configured', 'Firebase service account not configured');
         }
 
+        // WordPress escapes data - unescape it
+        $service_account = stripslashes($service_account);
+
         $sa = json_decode($service_account, true);
         if (!$sa || !isset($sa['private_key']) || !isset($sa['client_email'])) {
-            return new WP_Error('invalid_config', 'Invalid service account JSON');
+            return new WP_Error('invalid_config', 'Invalid service account JSON. Error: ' . json_last_error_msg());
         }
 
         $user = get_userdata($user_id);
