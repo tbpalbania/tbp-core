@@ -26,25 +26,33 @@ class TBP_GitHub_Updater {
         $this->github_api_url = 'https://api.github.com/repos/' . $this->github_repo . '/releases/latest';
         $this->cache_key = 'tbp_core_github_update';
 
+        // Core update hooks
         add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
-        add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
-        add_filter('upgrader_post_install', [$this, 'post_install'], 10, 3);
+        add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
 
-        // Enable auto-updates support
-        add_filter('plugin_auto_update_setting_html', [$this, 'auto_update_setting_html'], 10, 3);
-
-        // Show update notice in plugin row
-        add_action('in_plugin_update_message-' . $this->plugin_file, [$this, 'plugin_update_message'], 10, 2);
+        // Auto-updates support
+        add_filter('auto_update_plugin', [$this, 'auto_update'], 10, 2);
+        add_action('admin_init', [$this, 'register_auto_update_hooks']);
     }
 
     /**
-     * Show additional update message
+     * Register auto-update related hooks
      */
-    public function plugin_update_message($plugin_data, $response) {
-        if (!empty($response->upgrade_notice)) {
-            printf('<br /><strong>%s</strong>', esc_html($response->upgrade_notice));
+    public function register_auto_update_hooks() {
+        // Force the plugin to appear in the auto-updates UI
+        add_filter('plugin_auto_update_setting_html', [$this, 'auto_update_setting_html'], 10, 3);
+    }
+
+    /**
+     * Allow auto-updates for this plugin
+     */
+    public function auto_update($update, $item) {
+        if (isset($item->slug) && $item->slug === $this->slug) {
+            $auto_updates = (array) get_site_option('auto_update_plugins', []);
+            return in_array($this->plugin_file, $auto_updates, true);
         }
+        return $update;
     }
 
     /**
@@ -55,35 +63,31 @@ class TBP_GitHub_Updater {
             return $html;
         }
 
-        // Generate auto-update toggle if not present
-        if (empty($html)) {
-            $auto_updates = (array) get_site_option('auto_update_plugins', []);
-            $is_enabled = in_array($this->plugin_file, $auto_updates, true);
+        // Check if auto-updates are enabled for this plugin
+        $auto_updates = (array) get_site_option('auto_update_plugins', []);
+        $is_enabled = in_array($this->plugin_file, $auto_updates, true);
 
-            if ($is_enabled) {
-                $text = __('Disable auto-updates');
-                $action = 'disable';
-            } else {
-                $text = __('Enable auto-updates');
-                $action = 'enable';
-            }
-
-            $query_args = [
-                'action' => $action . '-auto-update',
-                'plugin' => $this->plugin_file,
-                'paged' => 1,
-            ];
-            $url = add_query_arg($query_args, 'plugins.php');
-
-            $html = sprintf(
-                '<a href="%s" class="toggle-auto-update aria-button-if-js" data-wp-action="%s"><span class="dashicons dashicons-update spin hidden" aria-hidden="true"></span><span class="label">%s</span></a>',
-                wp_nonce_url($url, 'updates'),
-                $action,
-                esc_html($text)
-            );
+        if ($is_enabled) {
+            $text = __('Disable auto-updates');
+            $action = 'disable';
+        } else {
+            $text = __('Enable auto-updates');
+            $action = 'enable';
         }
 
-        return $html;
+        $query_args = [
+            'action' => $action . '-auto-update',
+            'plugin' => $this->plugin_file,
+            'paged' => isset($_REQUEST['paged']) ? absint($_REQUEST['paged']) : 1,
+        ];
+        $url = add_query_arg($query_args, 'plugins.php');
+
+        return sprintf(
+            '<a href="%s" class="toggle-auto-update aria-button-if-js" data-wp-action="%s"><span class="dashicons dashicons-update spin hidden" aria-hidden="true"></span><span class="label">%s</span></a>',
+            wp_nonce_url($url, 'updates'),
+            $action,
+            esc_html($text)
+        );
     }
 
     /**
@@ -132,20 +136,20 @@ class TBP_GitHub_Updater {
     }
 
     /**
-     * Get download URL from release
+     * Get download URL from release - specifically looks for tbp-core.zip
      */
     private function get_download_url($release) {
-        // First, check for attached zip asset
+        // Look specifically for tbp-core.zip asset
         if (!empty($release['assets'])) {
             foreach ($release['assets'] as $asset) {
-                if (strpos($asset['name'], '.zip') !== false) {
+                if ($asset['name'] === 'tbp-core.zip') {
                     return $asset['browser_download_url'];
                 }
             }
         }
 
-        // Fallback to GitHub's auto-generated source zip
-        return $release['zipball_url'];
+        // No proper zip found - return false to indicate update not available
+        return false;
     }
 
     /**
@@ -164,15 +168,17 @@ class TBP_GitHub_Updater {
         $plugin_data = $this->get_plugin_data();
         $current_version = $plugin_data['Version'];
         $remote_version = ltrim($release['tag_name'], 'v');
+        $download_url = $this->get_download_url($release);
 
-        if (version_compare($remote_version, $current_version, '>')) {
-            $update_data = (object) [
+        // Only show update if there's a proper tbp-core.zip attached
+        if (version_compare($remote_version, $current_version, '>') && $download_url) {
+            $transient->response[$this->plugin_file] = (object) [
                 'id' => $this->plugin_file,
                 'slug' => $this->slug,
                 'plugin' => $this->plugin_file,
                 'new_version' => $remote_version,
                 'url' => $release['html_url'],
-                'package' => $this->get_download_url($release),
+                'package' => $download_url,
                 'icons' => [],
                 'banners' => [],
                 'banners_rtl' => [],
@@ -181,9 +187,10 @@ class TBP_GitHub_Updater {
                 'tested' => get_bloginfo('version'),
                 'compatibility' => new stdClass(),
             ];
-            $transient->response[$this->plugin_file] = $update_data;
-        } else {
-            // No update available - still register in no_update for auto-update UI
+        }
+
+        // Always register in no_update for auto-update UI to work
+        if (!isset($transient->response[$this->plugin_file])) {
             $transient->no_update[$this->plugin_file] = (object) [
                 'id' => $this->plugin_file,
                 'slug' => $this->slug,
@@ -246,31 +253,6 @@ class TBP_GitHub_Updater {
         $changelog = nl2br($changelog);
 
         return '<div class="tbp-changelog">' . $changelog . '</div>';
-    }
-
-    /**
-     * Handle post-install to fix folder naming
-     */
-    public function post_install($response, $hook_extra, $result) {
-        global $wp_filesystem;
-
-        if (!isset($hook_extra['plugin']) || $hook_extra['plugin'] !== $this->plugin_file) {
-            return $response;
-        }
-
-        // GitHub zip extracts to folder like "tbpalbania-tbp-core-abc1234"
-        // We need to rename it to "tbp-core"
-        $plugin_folder = WP_PLUGIN_DIR . '/' . $this->slug;
-        
-        if ($result['destination'] !== $plugin_folder) {
-            $wp_filesystem->move($result['destination'], $plugin_folder);
-            $result['destination'] = $plugin_folder;
-        }
-
-        // Clear update cache
-        delete_transient($this->cache_key);
-
-        return $response;
     }
 
     /**
