@@ -98,29 +98,6 @@ class TBP_Subject_Theme_Post_Types {
     }
 
     public function add_admin_menus() {
-        // Ensure Academic menu exists (in case faculty-taxonomies is not active)
-        global $menu;
-        $academic_exists = false;
-        foreach ($menu as $item) {
-            if (isset($item[2]) && $item[2] === 'tbp-academic') {
-                $academic_exists = true;
-                break;
-            }
-        }
-
-        if (!$academic_exists) {
-            add_menu_page(
-                __('Academic', 'tbp-core'),
-                __('Academic', 'tbp-core'),
-                'manage_options',
-                'tbp-academic',
-                '__return_null',
-                'dashicons-welcome-learn-more',
-                58
-            );
-            remove_submenu_page('tbp-academic', 'tbp-academic');
-        }
-
         // Add Subjects as first item (position 0)
         add_submenu_page(
             'tbp-academic',
