@@ -10,6 +10,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Debug: Register test action immediately when file loads
+add_action('wp_ajax_tbp_google_file_loaded', function() {
+    wp_send_json_success(['message' => 'File is being loaded!', 'time' => current_time('mysql')]);
+});
+add_action('wp_ajax_nopriv_tbp_google_file_loaded', function() {
+    wp_send_json_success(['message' => 'File loaded (nopriv)', 'time' => current_time('mysql')]);
+});
+
 define('TBP_GOOGLE_PATH', __DIR__ . '/');
 define('TBP_GOOGLE_URL', TBP_CORE_URL . 'inc/functions/google-integration/');
 
