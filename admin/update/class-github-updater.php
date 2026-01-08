@@ -31,6 +31,9 @@ class TBP_GitHub_Updater {
         add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
 
+        // Clear cache when WordPress does force-check
+        add_action('load-update-core.php', [$this, 'maybe_clear_cache']);
+
         // Auto-updates support
         add_filter('auto_update_plugin', [$this, 'auto_update'], 10, 2);
         add_action('admin_init', [$this, 'register_auto_update_hooks']);
@@ -270,6 +273,15 @@ class TBP_GitHub_Updater {
         );
 
         return $links;
+    }
+
+    /**
+     * Clear cache when WordPress does a force update check
+     */
+    public function maybe_clear_cache() {
+        if (isset($_GET['force-check']) && $_GET['force-check'] == '1') {
+            delete_transient($this->cache_key);
+        }
     }
 
     /**
